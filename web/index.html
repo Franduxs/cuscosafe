@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>CuscoSafe - EPG YUYARIY S.A.C.</title>
+
+  <!-- PWA & iOS Safari Configuration -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#800020">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="CuscoSafe">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+
+  <!-- Leaflet OpenStreetMap CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header Bar -->
+  <header class="app-header">
+    <div class="brand-group">
+      <div class="brand-logo">CS</div>
+      <div class="brand-text">
+        <h1 class="brand-title">CuscoSafe</h1>
+        <p class="brand-sub">EPG YUYARIY S.A.C. · City Tour VR</p>
+      </div>
+    </div>
+    <div class="header-badges">
+      <span id="network-badge" class="badge badge-online">
+        <span class="badge-dot"></span> <span id="network-status-text">Online</span>
+      </span>
+      <span id="gps-badge" class="badge badge-gps">
+        🛰️ <span id="gps-accuracy">Buscando...</span>
+      </span>
+    </div>
+  </header>
+
+  <!-- Notification Banner (Geofence / Anomaly) -->
+  <div id="alert-banner" class="alert-banner alert-hidden">
+    <span class="alert-icon">⚠️</span>
+    <span id="alert-message" class="alert-message">Alerta del sistema</span>
+    <button class="alert-close" onclick="dismissBanner()">✕</button>
+  </div>
+
+  <!-- Content Container -->
+  <main class="app-main">
+    <!-- VIEW 1: MODO TURISTA -->
+    <section id="view-tourist" class="view-section view-active">
+      <div class="map-wrapper">
+        <div id="tourist-map" class="map-container"></div>
+        <div class="map-floating-bar">
+          <button class="btn-float" onclick="centerOnUser()" title="Centrar mi ubicación">🎯 Mi Posición</button>
+          <button class="btn-float" onclick="toggleTourSimulation()" id="btn-sim-walk" title="Simular paseo por Cusco">🚶 Simular Paseo</button>
+        </div>
+      </div>
+
+      <!-- Tourist Control Card -->
+      <div class="tourist-card">
+        <div class="card-status-row">
+          <div class="status-col">
+            <span class="label">Zona del Tour</span>
+            <span id="geofence-status" class="val val-safe">✅ En Perímetro Seguro</span>
+          </div>
+          <div class="status-col">
+            <span class="label">Movimiento</span>
+            <span id="motion-status" class="val">🟢 En Ruta Nominal</span>
+          </div>
+          <div class="status-col">
+            <span class="label">Búfer Offline</span>
+            <span id="offline-buffer-count" class="val">0 ptos</span>
+          </div>
+        </div>
+
+        <!-- Big SOS Panic Button -->
+        <div class="sos-wrapper">
+          <button id="btn-sos" class="btn-sos-pulse" ontouchstart="handleSosTrigger()" onclick="handleSosTrigger()">
+            <span class="sos-icon">🚨</span>
+            <span class="sos-text">SOS</span>
+            <span class="sos-sub">Auxilio Inmediato</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: CENTRO DE CONTROL OPERADOR -->
+    <section id="view-operator" class="view-section">
+      <div class="hud-container">
+        <div class="hud-card">
+          <span class="hud-num" id="hud-active-tourists">12</span>
+          <span class="hud-label">Turistas Activos</span>
+        </div>
+        <div class="hud-card hud-alert">
+          <span class="hud-num" id="hud-sos-count">0</span>
+          <span class="hud-label">Alertas SOS</span>
+        </div>
+        <div class="hud-card hud-warning">
+          <span class="hud-num" id="hud-lag-count">1</span>
+          <span class="hud-label">Rezagados (&gt;10m)</span>
+        </div>
+        <div class="hud-card">
+          <span class="hud-num">100%</span>
+          <span class="hud-label">Store&amp;Forward</span>
+        </div>
+      </div>
+
+      <div class="map-wrapper" style="height: 320px;">
+        <div id="operator-map" class="map-container"></div>
+      </div>
+
+      <div class="operator-logs-card">
+        <div class="table-header">
+          <h3>📋 Registro en Tiempo Real de Turistas (Av. El Sol / Qoricancha)</h3>
+        </div>
+        <div class="table-responsive">
+          <table class="operator-table">
+            <thead>
+              <tr>
+                <th>Turista</th>
+                <th>Estado</th>
+                <th>Última Posición</th>
+                <th>Batería</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="operator-tourists-table">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: BANCO DE PRUEBAS SENATI (MATRIZ CP-01 A CP-05) -->
+    <section id="view-tests" class="view-section">
+      <div class="test-panel-card">
+        <div class="test-header">
+          <h2>🧪 Matriz de Pruebas de Campo (SENATI CNIU-126)</h2>
+          <p>Valida los requisitos funcionales en tiempo real en tu iPhone.</p>
+        </div>
+
+        <div class="test-grid">
+          <!-- CP-01 -->
+          <div class="test-item">
+            <div class="test-info">
+              <strong>CP-01: Simulación de Cañón Urbano (Offline)</strong>
+              <p>Simula pérdida total de datos 4G al entrar a un callejón colonial.</p>
+            </div>
+            <button id="btn-toggle-offline" class="btn-test" onclick="toggleSimulatedOffline()">Cortar Red (Modo Offline)</button>
+          </div>
+
+          <!-- CP-02 -->
+          <div class="test-item">
+            <div class="test-info">
+              <strong>CP-02: Store & Forward Dispatcher</strong>
+              <p>Fuerza la sincronización inmediata del lote de telemetría retenido.</p>
+            </div>
+            <button class="btn-test btn-primary" onclick="forceSyncStoreForward()">Despachar Lote a Nube</button>
+          </div>
+
+          <!-- CP-03 -->
+          <div class="test-item">
+            <div class="test-info">
+              <strong>CP-03: Botón de Pánico en Modo Offline</strong>
+              <p>Genera evento SOS y comprueba persistencia en búfer local.</p>
+            </div>
+            <button class="btn-test btn-danger" onclick="triggerTestOfflineSos()">Disparar SOS Offline</button>
+          </div>
+
+          <!-- CP-04 -->
+          <div class="test-item">
+            <div class="test-info">
+              <strong>CP-04: Detección Heurística de Anomalía</strong>
+              <p>Simula inmovilidad estática no programada &gt; 10 minutos.</p>
+            </div>
+            <button class="btn-test btn-warning" onclick="triggerProlongedStopTest()">Simular Turista Inmóvil</button>
+          </div>
+
+          <!-- CP-05 -->
+          <div class="test-item">
+            <div class="test-info">
+              <strong>CP-05: Violación de Geocerca (Ray-Casting)</strong>
+              <p>Teletransporta la posición fuera del polígono seguro del tour.</p>
+            </div>
+            <button class="btn-test btn-warning" onclick="triggerOutOfBoundsTest()">Teletransportar Fuera de Zona</button>
+          </div>
+        </div>
+
+        <!-- Telemetry DB Inspector -->
+        <div class="db-inspector">
+          <div class="inspector-header">
+            <h3>💾 Búfer Local SQLite / Store & Forward (<span id="buffer-records-count">0</span> registros)</h3>
+            <button class="btn-xs" onclick="clearTelemetryBuffer()">Limpiar Búfer</button>
+          </div>
+          <pre id="db-preview" class="db-console">// Registros encolados en SQLite local...</pre>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- SOS Modal Countdown (Anti-False Alarm) -->
+  <div id="sos-modal" class="modal-backdrop modal-hidden">
+    <div class="modal-card">
+      <div class="modal-icon-pulse">🚨</div>
+      <h2 class="modal-title">EMERGENCIA SOS ACTIVADA</h2>
+      <p class="modal-desc">Transmitiendo alerta prioritaria a la Central de Operaciones EPG YUYARIY...</p>
+      
+      <div class="countdown-circle">
+        <span id="countdown-number">3</span>
+      </div>
+
+      <p class="modal-hint">Presiona cancelar si fue un toque accidental:</p>
+      <button class="btn-cancel-sos" onclick="cancelSosAlert()">✕ CANCELAR ALERTA (Falsa Alarma)</button>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation Bar (iOS Style) -->
+  <nav class="bottom-nav">
+    <button class="nav-btn nav-active" onclick="switchTab('tourist', this)">
+      <span class="nav-icon">🧭</span>
+      <span class="nav-label">Turista</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('operator', this)">
+      <span class="nav-icon">🛡️</span>
+      <span class="nav-label">Operador</span>
+    </button>
+    <button class="nav-btn" onclick="switchTab('tests', this)">
+      <span class="nav-icon">🧪</span>
+      <span class="nav-label">Pruebas</span>
+    </button>
+  </nav>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

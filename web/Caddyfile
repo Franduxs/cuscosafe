@@ -1,0 +1,22 @@
+franduxs-bot.xyz {
+    @spotifyCallback path /callback /spotify/callback /drive/callback
+    handle @spotifyCallback {
+        reverse_proxy 127.0.0.1:3000
+    }
+
+    handle /garantias* {
+        reverse_proxy 127.0.0.1:3050
+    }
+
+    handle /cuscosafe* {
+        reverse_proxy 127.0.0.1:3060
+    }
+
+    handle {
+        reverse_proxy 127.0.0.1:8000
+    }
+}
+
+www.franduxs-bot.xyz {
+    redir https://franduxs-bot.xyz{uri} permanent
+}
