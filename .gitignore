@@ -39,6 +39,10 @@ migrate_working_dir/
 **/android/local.properties
 **/android/**/GeneratedPluginRegistrant.java
 
+# Build outputs
+build_artifact/
+*.apk
+
 # Sensitive keys and config
 *.env
 *.keystore
