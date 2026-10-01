@@ -1,0 +1,48 @@
+name: cuscosafe
+description: "Sistema Inteligente Offline-First de Monitoreo y Asistencia para EPG YUYARIY S.A.C."
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.2.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Persistencia Local (Offline-First Store & Forward)
+  sqflite: ^2.3.2
+  path: ^1.9.0
+
+  # Conectividad y Detección de Estado de Red
+  connectivity_plus: ^5.0.2
+
+  # Geolocalización y Sensores de Movimiento
+  geolocator: ^11.0.0
+
+  # Mapeo 100% Gratuito y Libre (OpenStreetMap)
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.1
+
+  # Backend & Sincronización en Tiempo Real (Firebase Spark - 100% Gratuito)
+  firebase_core: ^2.27.0
+  cloud_firestore: ^4.15.5
+  firebase_auth: ^4.17.5
+  firebase_messaging: ^14.7.16
+
+  # Notificaciones Locales (Alertas de Desvío Heurístico y SOS)
+  flutter_local_notifications: ^17.0.0
+
+  # Gestión de Estado Reactivo
+  provider: ^6.1.1
+  intl: ^0.19.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/icons/
