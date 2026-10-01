@@ -84,44 +84,47 @@ class _TourOperatorMapScreenState extends State<TourOperatorMapScreen> {
       body: Stack(
         children: [
           // 1. Mapa interactivo OpenStreetMap
-          FlutterMap(
-            mapController: _mapController,
-            options: const MapOptions(
-              initialCenter: TourCoordinates.plazaDeArmas,
-              initialZoom: 15.0,
+          Positioned.fill(
+            child: FlutterMap(
+              mapController: _mapController,
+              options: const MapOptions(
+                initialCenter: TourCoordinates.plazaDeArmas,
+                initialZoom: 15.0,
+              ),
+              children: [
+                TileLayer(
+                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  userAgentPackageName: 'com.yuyariy.cuscosafe.app',
+                  maxZoom: 19,
+                ),
+                // Perímetro del City Tour
+                PolygonLayer(
+                  polygons: [
+                    Polygon(
+                      points: TourCoordinates.cityTourSafePolygon,
+                      color: AppColors.primaryIncaGold.withOpacity(0.15),
+                      borderColor: AppColors.primaryIncaGold,
+                      borderStrokeWidth: 2,
+                      isFilled: true,
+                    ),
+                  ],
+                ),
+                // Marcadores de Hitos Turísticos
+                MarkerLayer(
+                  markers: [
+                    _buildHitoMarker(TourCoordinates.qoricancha, 'Qoricancha', Icons.temple_buddhist),
+                    _buildHitoMarker(TourCoordinates.plazaDeArmas, 'Plaza de Armas', Icons.account_balance),
+                    _buildHitoMarker(TourCoordinates.mercadoSanPedro, 'San Pedro', Icons.storefront),
+                    _buildHitoMarker(TourCoordinates.sacsayhuaman, 'Sacsayhuamán', Icons.terrain),
+                    _buildHitoMarker(TourCoordinates.yuyariyOffice, 'YUYARIY S.A.C.', Icons.vrpano, color: AppColors.primaryIncaGold),
+                  ],
+                ),
+                // Marcadores de Turistas en vivo
+                MarkerLayer(
+                  markers: _demoTourists.map((t) => _buildTouristMarker(t)).toList(),
+                ),
+              ],
             ),
-            children: [
-              TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.yuyariy.cuscosafe',
-              ),
-              // Perímetro del City Tour
-              PolygonLayer(
-                polygons: [
-                  Polygon(
-                    points: TourCoordinates.cityTourSafePolygon,
-                    color: AppColors.primaryIncaGold.withOpacity(0.15),
-                    borderColor: AppColors.primaryIncaGold,
-                    borderStrokeWidth: 2,
-                    isFilled: true,
-                  ),
-                ],
-              ),
-              // Marcadores de Hitos Turísticos
-              MarkerLayer(
-                markers: [
-                  _buildHitoMarker(TourCoordinates.qoricancha, 'Qoricancha', Icons.temple_buddhist),
-                  _buildHitoMarker(TourCoordinates.plazaDeArmas, 'Plaza de Armas', Icons.account_balance),
-                  _buildHitoMarker(TourCoordinates.mercadoSanPedro, 'San Pedro', Icons.storefront),
-                  _buildHitoMarker(TourCoordinates.sacsayhuaman, 'Sacsayhuamán', Icons.terrain),
-                  _buildHitoMarker(TourCoordinates.yuyariyOffice, 'YUYARIY S.A.C.', Icons.vrpano, color: AppColors.primaryIncaGold),
-                ],
-              ),
-              // Marcadores de Turistas en vivo
-              MarkerLayer(
-                markers: _demoTourists.map((t) => _buildTouristMarker(t)).toList(),
-              ),
-            ],
           ),
 
           // 2. HUD Superior de Métricas Operativas

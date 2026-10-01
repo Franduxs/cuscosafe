@@ -32,8 +32,14 @@ jobs:
 
       - name: Generar harness Android y configurar dependencias nativas
         run: |
+          echo "Respaldando AndroidManifest con permisos de red y GPS..."
+          cp android/app/src/main/AndroidManifest.xml /tmp/AndroidManifest_backup.xml || true
+
           echo "Generando plataforma Android oficial..."
           flutter create . --platforms=android --org=com.yuyariy
+
+          echo "Restaurando AndroidManifest con permisos completos..."
+          cp /tmp/AndroidManifest_backup.xml android/app/src/main/AndroidManifest.xml || true
           
           # Actualizar Kotlin a 1.9.10 en settings.gradle y build.gradle
           if [ -f "android/settings.gradle" ]; then

@@ -93,51 +93,62 @@ class _TouristHomeScreenState extends State<TouristHomeScreen> {
       body: Stack(
         children: [
           // 1. Mapa Gratuito OpenStreetMap (Sustituto de Google Maps API)
-          FlutterMap(
-            mapController: _mapController,
-            options: MapOptions(
-              initialCenter: currentLatLng,
-              initialZoom: 15.5,
-            ),
-            children: [
-              TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.yuyariy.cuscosafe',
+          Positioned.fill(
+            child: FlutterMap(
+              mapController: _mapController,
+              options: MapOptions(
+                initialCenter: currentLatLng,
+                initialZoom: 15.5,
               ),
-              // Polígono de Geocercado Seguro del City Tour
-              PolygonLayer(
-                polygons: [
-                  Polygon(
-                    points: TourCoordinates.cityTourSafePolygon,
-                    color: AppColors.primaryIncaGold.withOpacity(0.18),
-                    borderColor: AppColors.primaryIncaGold,
-                    borderStrokeWidth: 2.5,
-                    isFilled: true,
-                  ),
-                ],
-              ),
-              // Marcador de la posición actual del turista
-              MarkerLayer(
-                markers: [
-                  Marker(
-                    point: currentLatLng,
-                    width: 50,
-                    height: 50,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryBurgundy,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 3),
-                        boxShadow: const [
-                          BoxShadow(color: Colors.black26, blurRadius: 6),
-                        ],
-                      ),
-                      child: const Icon(Icons.person_pin, color: Colors.white, size: 28),
+              children: [
+                TileLayer(
+                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  userAgentPackageName: 'com.yuyariy.cuscosafe.app',
+                  maxZoom: 19,
+                ),
+                // Polígono de Geocercado Seguro del City Tour
+                PolygonLayer(
+                  polygons: [
+                    Polygon(
+                      points: TourCoordinates.cityTourSafePolygon,
+                      color: AppColors.primaryIncaGold.withOpacity(0.18),
+                      borderColor: AppColors.primaryIncaGold,
+                      borderStrokeWidth: 2.5,
+                      isFilled: true,
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+                // Marcadores de Hitos del Tour y Posición del Turista
+                MarkerLayer(
+                  markers: [
+                    // Hitos del Tour
+                    _buildLandmarkMarker(TourCoordinates.qoricancha, 'Qoricancha', Icons.temple_buddhist),
+                    _buildLandmarkMarker(TourCoordinates.plazaDeArmas, 'Plaza de Armas', Icons.account_balance),
+                    _buildLandmarkMarker(TourCoordinates.mercadoSanPedro, 'San Pedro', Icons.storefront),
+                    _buildLandmarkMarker(TourCoordinates.sacsayhuaman, 'Sacsayhuamán', Icons.terrain),
+                    _buildLandmarkMarker(TourCoordinates.yuyariyOffice, 'YUYARIY VR', Icons.vrpano, color: AppColors.primaryIncaGold),
+
+                    // Marcador de la posición actual del turista
+                    Marker(
+                      point: currentLatLng,
+                      width: 50,
+                      height: 50,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryBurgundy,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 3),
+                          boxShadow: const [
+                            BoxShadow(color: Colors.black26, blurRadius: 6),
+                          ],
+                        ),
+                        child: const Icon(Icons.person_pin, color: Colors.white, size: 28),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
 
           // 2. Banner Superior: Diagnóstico Heurístico de IA
@@ -236,6 +247,39 @@ class _TouristHomeScreenState extends State<TouristHomeScreen> {
                 fontWeight: FontWeight.bold,
                 fontSize: 13,
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Marker _buildLandmarkMarker(LatLng pos, String label, IconData icon, {Color color = AppColors.darkStone}) {
+    return Marker(
+      point: pos,
+      width: 75,
+      height: 52,
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+              boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 4)],
+            ),
+            child: Icon(icon, color: Colors.white, size: 16),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.9),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 8.5, fontWeight: FontWeight.bold, color: Colors.black87),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
