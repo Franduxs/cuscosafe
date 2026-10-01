@@ -35,6 +35,15 @@ jobs:
           echo "Generando plataforma Android oficial..."
           flutter create . --platforms=android --org=com.yuyariy
           
+          # Actualizar Kotlin a 1.9.10 en settings.gradle y build.gradle
+          if [ -f "android/settings.gradle" ]; then
+            sed -i -E 's/org.jetbrains.kotlin.android" version "[^"]+"/org.jetbrains.kotlin.android" version "1.9.10"/g' android/settings.gradle || true
+            sed -i -E 's/id "org.jetbrains.kotlin.android" version "[^"]+"/id "org.jetbrains.kotlin.android" version "1.9.10"/g' android/settings.gradle || true
+          fi
+          if [ -f "android/build.gradle" ]; then
+            sed -i -E "s/ext.kotlin_version = '[^']+'/ext.kotlin_version = '1.9.10'/g" android/build.gradle || true
+          fi
+
           # Asegurar compatibilidad Gradle y minSdkVersion 21
           if [ -f "android/app/build.gradle" ]; then
             sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 21/g' android/app/build.gradle || true
