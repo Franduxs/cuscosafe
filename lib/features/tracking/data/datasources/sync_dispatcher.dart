@@ -13,7 +13,7 @@ class SyncDispatcher with ChangeNotifier {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final Connectivity _connectivity = Connectivity();
 
-  StreamSubscription<List<ConnectivityResult>>? _connectivitySubscription;
+  StreamSubscription<dynamic>? _connectivitySubscription;
 
   bool _isOnline = false;
   bool _isSyncing = false;
@@ -27,8 +27,13 @@ class SyncDispatcher with ChangeNotifier {
 
   void initialize() {
     _checkInitialConnectivity();
-    _connectivitySubscription = _connectivity.onConnectivityChanged.listen((results) {
-      final bool hasNet = results.any((r) => r != ConnectivityResult.none);
+    _connectivitySubscription = _connectivity.onConnectivityChanged.listen((dynamic event) {
+      bool hasNet = false;
+      if (event is List) {
+        hasNet = event.any((r) => r != ConnectivityResult.none);
+      } else if (event is ConnectivityResult) {
+        hasNet = event != ConnectivityResult.none;
+      }
       _isOnline = hasNet;
       notifyListeners();
 
@@ -41,8 +46,14 @@ class SyncDispatcher with ChangeNotifier {
   }
 
   Future<void> _checkInitialConnectivity() async {
-    final results = await _connectivity.checkConnectivity();
-    _isOnline = results.any((r) => r != ConnectivityResult.none);
+    final dynamic results = await _connectivity.checkConnectivity();
+    bool hasNet = false;
+    if (results is List) {
+      hasNet = results.any((r) => r != ConnectivityResult.none);
+    } else if (results is ConnectivityResult) {
+      hasNet = results != ConnectivityResult.none;
+    }
+    _isOnline = hasNet;
     notifyListeners();
 
     if (_isOnline) {
