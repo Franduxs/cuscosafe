@@ -1,0 +1,66 @@
+name: Compilar y Publicar APK Android
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Release APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar Repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Configurar Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.3'
+          channel: 'stable'
+          cache: true
+
+      - name: Generar harness Android y configurar dependencias nativas
+        run: |
+          echo "Generando plataforma Android oficial..."
+          flutter create . --platforms=android --org=com.yuyariy
+          # Asegurar minSdkVersion >= 21 para Firebase y SQLite
+          if [ -f "android/app/build.gradle" ]; then
+            sed -i 's/minSdkVersion flutter.minSdkVersion/minSdkVersion 21/g' android/app/build.gradle || true
+            sed -i 's/minSdk = flutter.minSdkVersion/minSdk = 21/g' android/app/build.gradle || true
+          fi
+
+      - name: Instalar dependencias Dart y Flutter
+        run: flutter pub get
+
+      - name: Compilar APK Release de Producción
+        run: flutter build apk --release --no-tree-shake-icons
+
+      - name: Preparar archivo instalable
+        run: |
+          cp build/app/outputs/flutter-apk/app-release.apk CuscoSafe.apk
+
+      - name: Subir APK como Artefacto de GitHub
+        uses: actions/upload-artifact@v4
+        with:
+          name: CuscoSafe-Android-APK
+          path: CuscoSafe.apk
+
+      - name: Publicar Release Oficial en GitHub
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create v1.0.0-apk CuscoSafe.apk \
+            --title "CuscoSafe v1.0.0 (Instalador Android APK Oficial)" \
+            --notes "Compilación oficial de la aplicación móvil CuscoSafe para EPG YUYARIY S.A.C. - Proyecto de Titulación SENATI CNIU-126." \
+            --clobber || true
