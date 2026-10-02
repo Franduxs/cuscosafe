@@ -32,6 +32,52 @@ const SAFE_POLYGON = [
   [-13.5130, -71.9870]  // Santa Teresa Nor-Oeste
 ];
 
+// 2.1 Hitos Oficiales del City Tour VR (EPG YUYARIY)
+const TOUR_LANDMARKS = [
+  {
+    id: 'plazaDeArmas',
+    name: 'Plaza de Armas (Huacaypata)',
+    coords: YUYARIY_COORDS.plazaDeArmas,
+    icon: '🏛️',
+    desc: 'Centro sagrado del Imperio Inca y núcleo monumental del Cusco colonial.',
+    narration: 'Bienvenido a la Plaza de Armas del Cusco, conocida en tiempos incas como Huacaypata. Aquí confluían los cuatro suyos del Tahuantinsuyo. Con tus lentes VR YUYARIY puedes apreciar cómo lucían los palacios de Pachacútec y Huayna Cápac.',
+    vrImage: 'icons/vr_plaza.jpg'
+  },
+  {
+    id: 'qoricancha',
+    name: 'Qoricancha (Templo del Sol)',
+    coords: YUYARIY_COORDS.qoricancha,
+    icon: '☀️',
+    desc: 'El recinto de adoración al Sol más fastuoso del Tahuantinsuyo.',
+    narration: 'Te encuentras en las inmediaciones del Qoricancha, el Templo del Sol. Sus muros de piedra andesita pulida estaban forrados en planchas de oro macizo. La experiencia de Realidad Virtual recrea el resplandor sagrado del Inti Raymi.',
+    vrImage: 'icons/vr_qoricancha.jpg'
+  },
+  {
+    id: 'sacsayhuaman',
+    name: 'Fortaleza Sacsayhuamán',
+    coords: YUYARIY_COORDS.sacsayhuaman,
+    icon: '🗿',
+    desc: 'Murallas megalíticas ciclópeas con piedras de más de 120 toneladas.',
+    narration: 'Avanzamos hacia Sacsayhuamán. Esta impresionante fortaleza y centro astronómico cuenta con tres niveles de murallas ciclópeas labradas con precisión milimétrica.',
+    vrImage: 'icons/vr_sacsayhuaman.jpg'
+  },
+  {
+    id: 'sanPedro',
+    name: 'Mercado Central San Pedro',
+    coords: YUYARIY_COORDS.sanPedro,
+    icon: '🛍️',
+    desc: 'Histórico mercado colonial y centro de intercambio andino tradicional.',
+    narration: 'Mercado Central de San Pedro, construido en mil novecientos veinticinco y diseñado por el ingeniero Gustave Eiffel. Es el punto neurálgico del trueque y tradición gastronómica cusqueña.',
+    vrImage: 'icons/vr_plaza.jpg'
+  }
+];
+
+const MAP_LAYERS = {
+  osm: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  satellite: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+};
+
 // 3. Estado Global del Sistema
 const state = {
   isSimulatedOffline: false,
@@ -46,6 +92,9 @@ const state = {
   sosCountdownInterval: null,
   sosCountdownValue: 3,
   pendingSosEvent: null,
+  mapStyle: 'osm',
+  isAudioGuideActive: false,
+  currentLandmarkKey: 'qoricancha',
   telemetryBuffer: JSON.parse(localStorage.getItem('cuscosafe_telemetry') || '[]'),
   touristsGroup: [
     { id: 'T-01', name: 'Franduxs (Tú)', lat: -13.5160, lng: -71.9788, status: 'safe', battery: 94 },
@@ -58,6 +107,7 @@ const state = {
 
 // 4. Inicialización de Mapas Leaflet
 let touristMap, operatorMap;
+let touristTileLayer, operatorTileLayer;
 let touristMarker, touristCircle, geofencePolygonLayer;
 let operatorMarkersGroup;
 
@@ -68,17 +118,17 @@ function initMaps() {
     attributionControl: false
   }).setView(YUYARIY_COORDS.plazaDeArmas, 16);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  touristTileLayer = L.tileLayer(MAP_LAYERS.osm, {
     maxZoom: 19
   }).addTo(touristMap);
 
   // Polígono seguro
   geofencePolygonLayer = L.polygon(SAFE_POLYGON, {
-    color: '#D4AF37',
+    color: '#D2A542',
     weight: 2,
     dashArray: '5, 5',
-    fillColor: '#800020',
-    fillOpacity: 0.08
+    fillColor: '#B65B52',
+    fillOpacity: 0.10
   }).addTo(touristMap);
 
   // Puntos del tour
@@ -87,9 +137,9 @@ function initMaps() {
   // Marcador del Turista
   const touristIcon = L.divIcon({
     className: 'custom-tourist-pin',
-    html: '<div style="background:#2A9D8F;width:18px;height:18px;border-radius:50%;border:3px solid white;box-shadow:0 0 10px rgba(0,0,0,0.5);"></div>',
-    iconSize: [18, 18],
-    iconAnchor: [9, 9]
+    html: '<div style="background:#2A9D8F;width:20px;height:20px;border-radius:50%;border:3px solid white;box-shadow:0 0 12px rgba(0,0,0,0.6);animation:pulse 2s infinite;"></div>',
+    iconSize: [20, 20],
+    iconAnchor: [10, 10]
   });
 
   touristMarker = L.marker(YUYARIY_COORDS.plazaDeArmas, { icon: touristIcon }).addTo(touristMap);
@@ -101,16 +151,16 @@ function initMaps() {
     attributionControl: false
   }).setView(YUYARIY_COORDS.plazaDeArmas, 15);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  operatorTileLayer = L.tileLayer(MAP_LAYERS.osm, {
     maxZoom: 19
   }).addTo(operatorMap);
 
   L.polygon(SAFE_POLYGON, {
-    color: '#D4AF37',
+    color: '#D2A542',
     weight: 2,
     dashArray: '4, 4',
-    fillColor: '#D4AF37',
-    fillOpacity: 0.06
+    fillColor: '#D2A542',
+    fillOpacity: 0.08
   }).addTo(operatorMap);
 
   addTourLandmarks(operatorMap);
@@ -119,22 +169,27 @@ function initMaps() {
 }
 
 function addTourLandmarks(mapInstance) {
-  const landmarks = [
-    { name: '🏛️ Plaza de Armas', coords: YUYARIY_COORDS.plazaDeArmas },
-    { name: '☀️ Qoricancha', coords: YUYARIY_COORDS.qoricancha },
-    { name: '🏢 Sede YUYARIY', coords: YUYARIY_COORDS.office },
-    { name: '🛍️ Mercado San Pedro', coords: YUYARIY_COORDS.sanPedro },
-    { name: '🗿 Sacsayhuamán', coords: YUYARIY_COORDS.sacsayhuaman }
-  ];
-
-  landmarks.forEach(lm => {
-    L.circleMarker(lm.coords, {
-      radius: 6,
-      color: '#D4AF37',
-      fillColor: '#800020',
-      fillOpacity: 0.9,
+  TOUR_LANDMARKS.forEach(lm => {
+    const marker = L.circleMarker(lm.coords, {
+      radius: 7,
+      color: '#D2A542',
+      fillColor: '#B65B52',
+      fillOpacity: 0.95,
       weight: 2
-    }).bindPopup(`<b>${lm.name}</b><br>Punto Autorizado City Tour`).addTo(mapInstance);
+    });
+
+    const popupHtml = `
+      <div style="min-width:180px; font-family:sans-serif;">
+        <strong style="color:#28323D; font-size:12.5px;">${lm.icon} ${lm.name}</strong>
+        <p style="font-size:10.5px; color:#4A5568; margin:4px 0 8px 0; line-height:1.3;">${lm.desc}</p>
+        <div style="display:flex; gap:6px;">
+          <button onclick="openVrModal('${lm.id}')" style="background:#B65B52; color:white; border:none; padding:4px 8px; border-radius:6px; font-size:10px; font-weight:700; cursor:pointer;">🥽 Ver VR 360°</button>
+          <button onclick="narrateCurrentVrScene()" style="background:#28323D; color:#D2A542; border:none; padding:4px 8px; border-radius:6px; font-size:10px; font-weight:700; cursor:pointer;">🎙️ Narrar</button>
+        </div>
+      </div>
+    `;
+
+    marker.bindPopup(popupHtml).addTo(mapInstance);
   });
 }
 
@@ -247,6 +302,9 @@ function updateTouristPosition(lat, lng, accuracy = 5, recordToBuffer = true) {
   if (recordToBuffer) {
     saveTelemetryPoint(lat, lng);
   }
+
+  // Actualizar Brújula y Distancia Espacial en HUD
+  updateSpatialHud();
 }
 
 // 8. Motor Offline-First (Store & Forward)
@@ -551,6 +609,393 @@ function closeAgencyInfoModal() {
   if (modal) modal.classList.add('modal-hidden');
 }
 
+// 14. Selector Dinámico de Capas de Mapa (OpenStreetMap / Satélite Esri / Pizarra Nocturna)
+function toggleMapLayer() {
+  const modes = ['osm', 'satellite', 'dark'];
+  const nextIdx = (modes.indexOf(state.mapStyle) + 1) % modes.length;
+  state.mapStyle = modes[nextIdx];
+
+  if (touristTileLayer) touristMap.removeLayer(touristTileLayer);
+  touristTileLayer = L.tileLayer(MAP_LAYERS[state.mapStyle], { maxZoom: 19 }).addTo(touristMap);
+  touristTileLayer.bringToBack();
+
+  const btn = document.getElementById('btn-map-layer');
+  if (state.mapStyle === 'satellite') {
+    btn.innerHTML = '🌙 Noche';
+    showBanner('🛰️ Modo Satélite HD activado (Fotografía aérea de precisión)');
+  } else if (state.mapStyle === 'dark') {
+    btn.innerHTML = '🗺️ Calles';
+    showBanner('🌙 Modo Nocturno Andino activado (Contraste dorado sobre pizarra)');
+  } else {
+    btn.innerHTML = '🛰️ Satélite';
+    showBanner('🗺️ Modo Calles OpenStreetMap activado');
+  }
+}
+
+// 15. Brújula Espacial y Radar HUD en Tiempo Real
+function updateSpatialHud() {
+  const current = state.currentPosition;
+  if (!current) return;
+
+  let nearest = TOUR_LANDMARKS[0];
+  let minDistance = 999999;
+
+  TOUR_LANDMARKS.forEach(lm => {
+    const d = calculateDistance(current.lat, current.lng, lm.coords[0], lm.coords[1]);
+    if (d < minDistance) {
+      minDistance = d;
+      nearest = lm;
+    }
+  });
+
+  const distMeters = Math.round(minDistance);
+  const timeMin = Math.max(1, Math.round(distMeters / 75));
+
+  const nameEl = document.getElementById('hud-landmark-name');
+  const distEl = document.getElementById('hud-landmark-dist');
+  if (nameEl) nameEl.textContent = nearest.name.split(' (')[0];
+  if (distEl) distEl.textContent = `· ${distMeters}m (${timeMin}m)`;
+
+  const bearing = calculateBearing(current.lat, current.lng, nearest.coords[0], nearest.coords[1]);
+  const compassArrow = document.getElementById('compass-icon');
+  const compassText = document.getElementById('compass-text');
+  if (compassArrow) {
+    compassArrow.style.transform = `rotate(${Math.round(bearing)}deg)`;
+  }
+  if (compassText) {
+    const cardinals = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
+    const card = cardinals[Math.round(bearing / 45) % 8];
+    compassText.textContent = `${card} ${Math.round(bearing)}°`;
+  }
+}
+
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371e3;
+  const phi1 = lat1 * Math.PI / 180;
+  const phi2 = lat2 * Math.PI / 180;
+  const deltaPhi = (lat2 - lat1) * Math.PI / 180;
+  const deltaLambda = (lon2 - lon1) * Math.PI / 180;
+
+  const a = Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
+            Math.cos(phi1) * Math.cos(phi2) *
+            Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+function calculateBearing(lat1, lon1, lat2, lon2) {
+  const y = Math.sin((lon2 - lon1) * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180);
+  const x = Math.cos(lat1 * Math.PI / 180) * Math.sin(lat2 * Math.PI / 180) -
+            Math.sin(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.cos((lon2 - lon1) * Math.PI / 180);
+  const brng = Math.atan2(y, x) * 180 / Math.PI;
+  return (brng + 360) % 360;
+}
+
+// 16. Selección de Hitos y Navegación Dinámica
+function selectLandmark(key, chipElem) {
+  state.currentLandmarkKey = key;
+  const lm = TOUR_LANDMARKS.find(l => l.id === key);
+  if (!lm) return;
+
+  document.querySelectorAll('.milestone-chip').forEach(c => c.classList.remove('chip-active'));
+  if (chipElem) {
+    chipElem.classList.add('chip-active');
+  } else {
+    document.querySelectorAll('.milestone-chip').forEach(c => {
+      if (c.textContent.toLowerCase().includes(key.toLowerCase().substring(0, 4))) {
+        c.classList.add('chip-active');
+      }
+    });
+  }
+
+  if (touristMap) {
+    touristMap.flyTo(lm.coords, 17, { duration: 1.2 });
+  }
+
+  updateSpatialHud();
+
+  if (state.isAudioGuideActive) {
+    narrateText(lm.narration);
+  }
+}
+
+function cycleToNextLandmark() {
+  const ids = TOUR_LANDMARKS.map(l => l.id);
+  const nextIdx = (ids.indexOf(state.currentLandmarkKey) + 1) % ids.length;
+  const nextKey = ids[nextIdx];
+  const chips = document.querySelectorAll('.milestone-chip');
+  selectLandmark(nextKey, chips[nextIdx]);
+}
+
+// 17. Audio-Guía Inteligente Multimodal con Síntesis de Voz Nativa
+function toggleAudioGuide() {
+  state.isAudioGuideActive = !state.isAudioGuideActive;
+  const btn = document.getElementById('btn-audio');
+  if (btn) {
+    btn.classList.toggle('btn-audio-glow', state.isAudioGuideActive);
+    btn.textContent = state.isAudioGuideActive ? '🎙️ Audio ON' : '🎙️ Audio';
+  }
+
+  if (state.isAudioGuideActive) {
+    const lm = TOUR_LANDMARKS.find(l => l.id === state.currentLandmarkKey) || TOUR_LANDMARKS[0];
+    narrateText(`Iniciando audio guía oficial de EPG YUYARIY. ${lm.narration}`);
+  } else {
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    showBanner('🔇 Audio guía pausada.');
+  }
+}
+
+function narrateCurrentVrScene() {
+  const lm = TOUR_LANDMARKS.find(l => l.id === vrState.activeLandmark) || TOUR_LANDMARKS[0];
+  narrateText(lm.narration);
+}
+
+function narrateText(text) {
+  if (!('speechSynthesis' in window)) {
+    showBanner('⚠️ Síntesis de voz no disponible en este dispositivo.');
+    return;
+  }
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.rate = 1.0;
+  utter.pitch = 1.0;
+  utter.lang = 'es-PE';
+
+  const voices = window.speechSynthesis.getVoices();
+  const esVoice = voices.find(v => v.lang.startsWith('es-PE') || v.lang.startsWith('es-ES') || v.lang.startsWith('es'));
+  if (esVoice) utter.voice = esVoice;
+
+  showBanner('🎙️ Reproduciendo relato histórico oficial...');
+  window.speechSynthesis.speak(utter);
+}
+
+// 18. Motor de Visor de Realidad Virtual 360° (YUYARIY VR Canvas Engine)
+let vrState = {
+  activeLandmark: 'qoricancha',
+  isGyro: false,
+  isStereo: false,
+  yaw: 0,
+  pitch: 0,
+  isDragging: false,
+  lastX: 0,
+  lastY: 0,
+  images: {},
+  animFrameId: null
+};
+
+function initVrViewer() {
+  const canvas = document.getElementById('vr-canvas');
+  if (!canvas) return;
+
+  TOUR_LANDMARKS.forEach(lm => {
+    const img = new Image();
+    img.src = lm.vrImage;
+    vrState.images[lm.id] = img;
+  });
+
+  canvas.addEventListener('mousedown', (e) => {
+    vrState.isDragging = true;
+    vrState.lastX = e.clientX;
+    vrState.lastY = e.clientY;
+  });
+
+  window.addEventListener('mouseup', () => {
+    vrState.isDragging = false;
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!vrState.isDragging) return;
+    const dx = e.clientX - vrState.lastX;
+    const dy = e.clientY - vrState.lastY;
+    vrState.lastX = e.clientX;
+    vrState.lastY = e.clientY;
+
+    vrState.yaw += dx * 0.25;
+    vrState.pitch = Math.max(-65, Math.min(65, vrState.pitch - dy * 0.25));
+  });
+
+  canvas.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 1) {
+      vrState.isDragging = true;
+      vrState.lastX = e.touches[0].clientX;
+      vrState.lastY = e.touches[0].clientY;
+    }
+  }, { passive: true });
+
+  window.addEventListener('touchend', () => {
+    vrState.isDragging = false;
+  });
+
+  canvas.addEventListener('touchmove', (e) => {
+    if (!vrState.isDragging || e.touches.length !== 1) return;
+    const dx = e.touches[0].clientX - vrState.lastX;
+    const dy = e.touches[0].clientY - vrState.lastY;
+    vrState.lastX = e.touches[0].clientX;
+    vrState.lastY = e.touches[0].clientY;
+
+    vrState.yaw += dx * 0.35;
+    vrState.pitch = Math.max(-65, Math.min(65, vrState.pitch - dy * 0.35));
+  }, { passive: true });
+
+  window.addEventListener('deviceorientation', (e) => {
+    if (!vrState.isGyro || e.alpha === null) return;
+    vrState.yaw = -e.alpha;
+    vrState.pitch = Math.max(-65, Math.min(65, e.beta - 45));
+  });
+}
+
+function openVrModal(landmarkKey = 'qoricancha') {
+  const modal = document.getElementById('vr-modal');
+  if (modal) modal.classList.remove('modal-hidden');
+  switchVrScene(landmarkKey);
+  startVrRenderLoop();
+}
+
+function closeVrModal() {
+  const modal = document.getElementById('vr-modal');
+  if (modal) modal.classList.add('modal-hidden');
+  if (vrState.animFrameId) cancelAnimationFrame(vrState.animFrameId);
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+}
+
+function switchVrScene(key, btnElem) {
+  vrState.activeLandmark = key;
+  const lm = TOUR_LANDMARKS.find(l => l.id === key) || TOUR_LANDMARKS[0];
+
+  const title = document.getElementById('vr-scene-title');
+  const desc = document.getElementById('vr-scene-desc');
+  if (title) title.textContent = lm.name;
+  if (desc) desc.textContent = lm.desc;
+
+  document.querySelectorAll('.vr-tab-btn').forEach(b => b.classList.remove('vr-tab-active'));
+  if (btnElem) {
+    btnElem.classList.add('vr-tab-active');
+  } else {
+    document.querySelectorAll('.vr-tab-btn').forEach(t => {
+      if (t.textContent.toLowerCase().includes(key.toLowerCase().substring(0, 4))) {
+        t.classList.add('vr-tab-active');
+      }
+    });
+  }
+
+  if (!vrState.images[key]) {
+    const img = new Image();
+    img.src = lm.vrImage;
+    vrState.images[key] = img;
+  }
+}
+
+function toggleVrGyro() {
+  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+    DeviceOrientationEvent.requestPermission().then(state => {
+      if (state === 'granted') {
+        vrState.isGyro = !vrState.isGyro;
+        updateGyroButton();
+      }
+    }).catch(err => {
+      console.warn('Gyro error:', err);
+      vrState.isGyro = !vrState.isGyro;
+      updateGyroButton();
+    });
+  } else {
+    vrState.isGyro = !vrState.isGyro;
+    updateGyroButton();
+  }
+}
+
+function updateGyroButton() {
+  const btn = document.getElementById('btn-vr-gyro');
+  if (btn) {
+    btn.classList.toggle('active', vrState.isGyro);
+    btn.textContent = vrState.isGyro ? '📱 Giroscopio ON' : '📱 Giroscopio';
+  }
+}
+
+function toggleVrStereo() {
+  vrState.isStereo = !vrState.isStereo;
+  const btn = document.getElementById('btn-vr-stereo');
+  if (btn) {
+    btn.classList.toggle('active', vrState.isStereo);
+    btn.textContent = vrState.isStereo ? '🥽 2 Ojos (VR)' : '🥽 Gafas VR';
+  }
+}
+
+function startVrRenderLoop() {
+  const canvas = document.getElementById('vr-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  function render() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    if (canvas.width !== rect.width || canvas.height !== rect.height) {
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+    }
+
+    const img = vrState.images[vrState.activeLandmark];
+    if (img && img.complete && img.naturalWidth > 0) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (vrState.isStereo) {
+        const halfW = canvas.width / 2;
+        drawVrEye(ctx, img, 0, 0, halfW, canvas.height, vrState.yaw - 1.5, vrState.pitch);
+        drawVrEye(ctx, img, halfW, 0, halfW, canvas.height, vrState.yaw + 1.5, vrState.pitch);
+
+        ctx.strokeStyle = '#D2A542';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(halfW, 0);
+        ctx.lineTo(halfW, canvas.height);
+        ctx.stroke();
+      } else {
+        drawVrEye(ctx, img, 0, 0, canvas.width, canvas.height, vrState.yaw, vrState.pitch);
+      }
+    }
+
+    vrState.animFrameId = requestAnimationFrame(render);
+  }
+
+  if (vrState.animFrameId) cancelAnimationFrame(vrState.animFrameId);
+  vrState.animFrameId = requestAnimationFrame(render);
+}
+
+function drawVrEye(ctx, img, xOffset, yOffset, viewW, viewH, yaw, pitch) {
+  const imgW = img.naturalWidth;
+  const imgH = img.naturalHeight;
+
+  const normYaw = (((yaw % 360) + 360) % 360) / 360;
+  const fovW = 0.28;
+  const fovH = (viewH / viewW) * fovW;
+
+  const srcX = normYaw * imgW;
+  const srcY = Math.max(0, Math.min(imgH - (imgH * fovH), (0.5 - (pitch / 180) - fovH / 2) * imgH));
+  const srcW = imgW * fovW;
+  const srcH = imgH * fovH;
+
+  if (srcX + srcW <= imgW) {
+    ctx.drawImage(img, srcX, srcY, srcW, srcH, xOffset, yOffset, viewW, viewH);
+  } else {
+    const part1W = imgW - srcX;
+    const part2W = srcW - part1W;
+    const viewPart1W = (part1W / srcW) * viewW;
+    const viewPart2W = viewW - viewPart1W;
+
+    ctx.drawImage(img, srcX, srcY, part1W, srcH, xOffset, yOffset, viewPart1W, viewH);
+    ctx.drawImage(img, 0, srcY, part2W, srcH, xOffset + viewPart1W, yOffset, viewPart2W, viewH);
+  }
+}
+
+// 19. Modal Altitud y Soroche
+function openAltitudeModal() {
+  const modal = document.getElementById('altitude-modal');
+  if (modal) modal.classList.remove('modal-hidden');
+}
+
+function closeAltitudeModal() {
+  const modal = document.getElementById('altitude-modal');
+  if (modal) modal.classList.add('modal-hidden');
+}
+
 // Conectividad nativa del navegador
 window.addEventListener('online', () => {
   if (!state.isSimulatedOffline) {
@@ -569,7 +1014,9 @@ window.addEventListener('offline', () => {
 // Inicialización general al cargar
 window.addEventListener('DOMContentLoaded', () => {
   initMaps();
+  initVrViewer();
   startGpsTracking();
+  updateSpatialHud();
   updateBufferUI();
   updateOperatorTable();
 });

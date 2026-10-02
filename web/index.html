@@ -60,10 +60,41 @@
     <!-- VIEW 1: MODO TURISTA -->
     <section id="view-tourist" class="view-section view-active">
       <div class="map-wrapper">
+        <!-- Top Spatial HUD Bar (Compass, Next Landmark & Layer Switcher) -->
+        <div class="spatial-hud-bar">
+          <div class="hud-pill hud-compass" id="hud-compass" title="Orientación espacial">
+            <span class="compass-icon" id="compass-icon">🧭</span>
+            <span class="compass-text" id="compass-text">N 0°</span>
+          </div>
+          <div class="hud-pill hud-landmark" onclick="cycleToNextLandmark()" title="Toca para centrar en el siguiente hito">
+            <span class="landmark-badge">Hito</span>
+            <span class="landmark-name" id="hud-landmark-name">Qoricancha</span>
+            <span class="landmark-dist" id="hud-landmark-dist">· 240m</span>
+          </div>
+          <button class="hud-btn-layer" onclick="toggleMapLayer()" id="btn-map-layer" title="Cambiar mapa: Satélite / Calles / Noche">
+            🛰️ Satélite
+          </button>
+        </div>
+
         <div id="tourist-map" class="map-container"></div>
+
+        <!-- Floating Innovation Action Bar -->
         <div class="map-floating-bar">
-          <button class="btn-float" onclick="centerOnUser()" title="Centrar mi ubicación">🎯 Mi Posición</button>
-          <button class="btn-float" onclick="toggleTourSimulation()" id="btn-sim-walk" title="Simular paseo por Cusco">🚶 Simular Paseo</button>
+          <button class="btn-float btn-vr-glow" onclick="openVrModal()" title="Visor de Realidad Virtual 360° EPG YUYARIY">
+            🥽 VR 360°
+          </button>
+          <button class="btn-float btn-audio-glow" onclick="toggleAudioGuide()" id="btn-audio" title="Audio-Guía Histórica con Voz">
+            🎙️ Audio
+          </button>
+          <button class="btn-float" onclick="openAltitudeModal()" title="Monitor de Altitud y Soroche Cusco">
+            🏔️ 3,399m
+          </button>
+          <button class="btn-float" onclick="centerOnUser()" title="Centrar mi ubicación GPS">
+            🎯 GPS
+          </button>
+          <button class="btn-float" onclick="toggleTourSimulation()" id="btn-sim-walk" title="Simular recorrido por Cusco">
+            🚶 Paseo
+          </button>
         </div>
       </div>
 
@@ -73,6 +104,32 @@
         <div class="tour-brand-pill" onclick="openAgencyInfoModal()" title="Ver ficha técnica y detalles del tour">
           <img src="icons/yuyariy-logo.png" alt="EPG YUYARIY" class="tour-brand-pill-img">
           <span class="tour-brand-pill-text">EPG YUYARIY · Tours con VR ℹ️</span>
+        </div>
+
+        <!-- Interactive Tour Milestones Carousel -->
+        <div class="tour-milestones-card">
+          <div class="milestones-header">
+            <span>🏛️ Hitos del City Tour VR</span>
+            <span class="milestone-sub">Toca para enfocar y narrar</span>
+          </div>
+          <div class="milestones-scroll">
+            <button class="milestone-chip chip-active" onclick="selectLandmark('plazaDeArmas', this)">
+              <span class="chip-title">Plaza de Armas</span>
+              <span class="chip-tag">Huacaypata</span>
+            </button>
+            <button class="milestone-chip" onclick="selectLandmark('qoricancha', this)">
+              <span class="chip-title">Qoricancha</span>
+              <span class="chip-tag">Templo Sol</span>
+            </button>
+            <button class="milestone-chip" onclick="selectLandmark('sacsayhuaman', this)">
+              <span class="chip-title">Sacsayhuamán</span>
+              <span class="chip-tag">Fortaleza</span>
+            </button>
+            <button class="milestone-chip" onclick="selectLandmark('sanPedro', this)">
+              <span class="chip-title">San Pedro</span>
+              <span class="chip-tag">Mercado</span>
+            </button>
+          </div>
         </div>
 
         <div class="card-status-row">
@@ -266,6 +323,79 @@
         <strong>Desarrollador / Investigador:</strong> Franduxs
       </p>
       <button class="btn-close-modal" onclick="closeAgencyInfoModal()">Cerrar Ficha</button>
+    </div>
+  </div>
+
+  <!-- Modal Visor Realidad Virtual 360° Inmersivo (EPG YUYARIY VR) -->
+  <div id="vr-modal" class="modal-backdrop modal-hidden">
+    <div class="vr-modal-container">
+      <div class="vr-top-toolbar">
+        <div class="vr-brand-badge">
+          <img src="icons/icon-192.png" alt="YUYARIY" class="vr-badge-icon">
+          <span>YUYARIY VR 360°</span>
+        </div>
+        <div class="vr-actions">
+          <button class="btn-vr-tool" id="btn-vr-gyro" onclick="toggleVrGyro()" title="Activar Giroscopio Móvil">📱 Giroscopio</button>
+          <button class="btn-vr-tool" id="btn-vr-stereo" onclick="toggleVrStereo()" title="Modo Pantalla Dividida para Gafas VR">🥽 Gafas VR</button>
+          <button class="btn-vr-tool btn-vr-speak" onclick="narrateCurrentVrScene()" title="Escuchar Narración del Hito">🎙️ Narrar</button>
+          <button class="btn-vr-close" onclick="closeVrModal()">✕</button>
+        </div>
+      </div>
+
+      <!-- VR Viewport & Canvas -->
+      <div class="vr-viewport-wrapper" id="vr-viewport">
+        <canvas id="vr-canvas"></canvas>
+        <div class="vr-crosshair" id="vr-crosshair"></div>
+        <div class="vr-hint-overlay" id="vr-hint">
+          👆 Arrastra la pantalla o gira tu teléfono en 360°
+        </div>
+      </div>
+
+      <!-- VR Scene Info & Milestone Tabs -->
+      <div class="vr-bottom-bar">
+        <div class="vr-scene-info">
+          <h4 id="vr-scene-title">Qoricancha · Templo del Sol</h4>
+          <p id="vr-scene-desc">Reconstrucción arqueológica en Realidad Virtual del centro ceremonial inca más sagrado.</p>
+        </div>
+        <div class="vr-tabs">
+          <button class="vr-tab-btn vr-tab-active" onclick="switchVrScene('qoricancha', this)">Qoricancha</button>
+          <button class="vr-tab-btn" onclick="switchVrScene('plazaDeArmas', this)">Plaza de Armas</button>
+          <button class="vr-tab-btn" onclick="switchVrScene('sacsayhuaman', this)">Sacsayhuamán</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Salud, Soroche y Prevención de Altitud en Cusco -->
+  <div id="altitude-modal" class="modal-backdrop modal-hidden">
+    <div class="info-modal-card">
+      <div class="altitude-gauge-card">
+        <div class="altitude-num">3,399</div>
+        <div class="altitude-unit">metros sobre el nivel del mar (Cusco)</div>
+        <div class="altitude-badge">🟢 Presión Estable · Monitoreo Preventivo</div>
+      </div>
+
+      <h3 style="color: var(--color-slate); font-size: 15px; margin: 12px 0 6px 0; font-weight: 800;">
+        🏔️ Prevención de Mal de Altura (Soroche)
+      </h3>
+      <p class="info-p">
+        Debido a la altitud del Cusco, la concentración efectiva de oxígeno es ~68%. Para disfrutar tu City Tour VR de EPG YUYARIY con total bienestar:
+      </p>
+      <ul style="font-size: 12px; color: #4A5568; line-height: 1.6; margin-left: 18px; margin-bottom: 12px;">
+        <li>💧 <strong>Hidratación constante:</strong> Bebe agua en pequeños sorbos.</li>
+        <li>🍵 <strong>Mate de coca o muña:</strong> Facilita la oxigenación y digestión.</li>
+        <li>🚶 <strong>Caminar a paso pausado:</strong> Evita esfuerzos súbitos en callejones empinados.</li>
+        <li>🥽 <strong>Pausa con lentes VR:</strong> Si sientes mareo cinético, descansa 2 minutos.</li>
+      </ul>
+
+      <div class="info-box-tech" style="border-left-color: var(--color-safe);">
+        <strong>📞 Asistencia Médica y de Emergencia en Cusco:</strong><br>
+        • Policía de Turismo Cusco: <a href="tel:084249654" style="color: var(--color-slate); font-weight: 700;">(084) 249654</a><br>
+        • Ambulancias SAMU: <a href="tel:106" style="color: var(--color-slate); font-weight: 700;">106</a><br>
+        • Clínica Pardo Cusco: <a href="tel:084240387" style="color: var(--color-slate); font-weight: 700;">(084) 240387</a> (Av. de la Cultura 710)
+      </div>
+
+      <button class="btn-close-modal" onclick="closeAltitudeModal()">Cerrar</button>
     </div>
   </div>
 

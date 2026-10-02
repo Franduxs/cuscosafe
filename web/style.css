@@ -851,3 +851,397 @@ body {
   background: var(--color-slate-dark);
 }
 
+/* ==========================================================================
+   Spatial HUD Bar (Brújula, Hito y Capas sobre el Mapa)
+   ========================================================================== */
+.spatial-hud-bar {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.hud-pill {
+  pointer-events: auto;
+  background: rgba(40, 50, 61, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(210, 165, 66, 0.5);
+  border-radius: 20px;
+  padding: 5px 10px;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  font-size: 11px;
+}
+
+.hud-compass {
+  font-weight: 800;
+  color: var(--color-gold);
+}
+
+.compass-icon {
+  display: inline-block;
+  transition: transform 0.2s ease-out;
+}
+
+.hud-landmark {
+  cursor: pointer;
+  max-width: 55%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.landmark-badge {
+  background: var(--color-burgundy);
+  color: #FFFFFF;
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.landmark-name {
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.landmark-dist {
+  color: var(--color-gold-light);
+  font-size: 10px;
+}
+
+.hud-btn-layer {
+  pointer-events: auto;
+  background: rgba(40, 50, 61, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(210, 165, 66, 0.5);
+  border-radius: 20px;
+  padding: 5px 10px;
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s, background 0.2s;
+}
+
+.hud-btn-layer:active {
+  transform: scale(0.95);
+  background: var(--color-slate-dark);
+}
+
+/* Botones con Resplandor Tecnológico */
+.btn-vr-glow {
+  background: linear-gradient(135deg, #B65B52, #8F3B33) !important;
+  color: #FFFFFF !important;
+  border: 1.5px solid var(--color-gold) !important;
+  box-shadow: 0 0 10px rgba(210, 165, 66, 0.45) !important;
+  font-weight: 800 !important;
+}
+
+.btn-audio-glow {
+  background: linear-gradient(135deg, #28323D, #1A2129) !important;
+  color: var(--color-gold) !important;
+  border: 1px solid var(--color-gold) !important;
+  font-weight: 800 !important;
+}
+
+/* Carrusel de Hitos del Tour VR */
+.tour-milestones-card {
+  background: #F8FAFC;
+  border-radius: 12px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(40, 50, 61, 0.08);
+}
+
+.milestones-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--color-slate);
+  margin-bottom: 6px;
+}
+
+.milestone-sub {
+  font-size: 9.5px;
+  color: #718096;
+  font-weight: 500;
+}
+
+.milestones-scroll {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.milestone-chip {
+  flex: 0 0 auto;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 5px 9px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.milestone-chip:hover, .milestone-chip:active {
+  border-color: var(--color-gold);
+}
+
+.chip-active {
+  background: #28323D !important;
+  border-color: var(--color-gold) !important;
+}
+
+.chip-active .chip-title {
+  color: #FFFFFF !important;
+}
+
+.chip-active .chip-tag {
+  color: var(--color-gold) !important;
+}
+
+.chip-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-slate);
+}
+
+.chip-tag {
+  font-size: 9px;
+  color: #718096;
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   Visor de Realidad Virtual 360° (Modal Completo)
+   ========================================================================== */
+.vr-modal-container {
+  background: #0D1117;
+  width: 95%;
+  max-width: 580px;
+  height: 85vh;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+  border: 1.5px solid var(--color-gold);
+}
+
+.vr-top-toolbar {
+  background: #161B22;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(210, 165, 66, 0.3);
+}
+
+.vr-brand-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-gold);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.vr-badge-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+}
+
+.vr-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-vr-tool {
+  background: #21262D;
+  color: #C9D1D9;
+  border: 1px solid #30363D;
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 10.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-vr-tool:active, .btn-vr-tool.active {
+  background: var(--color-gold);
+  color: #0D1117;
+  border-color: var(--color-gold);
+}
+
+.btn-vr-speak {
+  background: var(--color-burgundy);
+  color: #FFFFFF;
+  border-color: var(--color-burgundy);
+}
+
+.btn-vr-close {
+  background: none;
+  border: none;
+  color: #8B949E;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 2px 6px;
+}
+
+.vr-viewport-wrapper {
+  flex: 1;
+  position: relative;
+  background: #000000;
+  overflow: hidden;
+  cursor: grab;
+}
+
+.vr-viewport-wrapper:active {
+  cursor: grabbing;
+}
+
+#vr-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.vr-crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.vr-hint-overlay {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  color: #FFFFFF;
+  font-size: 10.5px;
+  padding: 4px 12px;
+  border-radius: 14px;
+  pointer-events: none;
+  animation: fadeInOut 4s infinite;
+}
+
+@keyframes fadeInOut {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.95; }
+}
+
+.vr-bottom-bar {
+  background: #161B22;
+  padding: 10px 14px;
+  border-top: 1px solid rgba(210, 165, 66, 0.3);
+}
+
+.vr-scene-info h4 {
+  color: #FFFFFF;
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+
+.vr-scene-info p {
+  color: #8B949E;
+  font-size: 11px;
+  line-height: 1.3;
+  margin-bottom: 8px;
+}
+
+.vr-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.vr-tab-btn {
+  flex: 1;
+  background: #21262D;
+  color: #C9D1D9;
+  border: 1px solid #30363D;
+  padding: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.vr-tab-active {
+  background: var(--color-burgundy) !important;
+  color: #FFFFFF !important;
+  border-color: var(--color-gold) !important;
+}
+
+/* Modal Altitud & Soroche */
+.altitude-gauge-card {
+  background: linear-gradient(135deg, #28323D, #1A2129);
+  border-radius: 16px;
+  padding: 16px;
+  text-align: center;
+  color: #FFFFFF;
+  border: 1.5px solid var(--color-gold);
+  margin-bottom: 12px;
+}
+
+.altitude-num {
+  font-size: 38px;
+  font-weight: 900;
+  color: var(--color-gold);
+  line-height: 1;
+}
+
+.altitude-unit {
+  font-size: 11px;
+  color: #A0AEC0;
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+.altitude-badge {
+  display: inline-block;
+  background: rgba(42, 157, 143, 0.25);
+  color: #7ee8d9;
+  border: 1px solid rgba(42, 157, 143, 0.6);
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 700;
+  margin-top: 8px;
+}
+
+
