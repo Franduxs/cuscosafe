@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cuscosafe-v4';
+const CACHE_NAME = 'cuscosafe-v5';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -14,6 +14,8 @@ const ASSETS_TO_CACHE = [
   './icons/vr_qoricancha.jpg',
   './icons/vr_plaza.jpg',
   './icons/vr_sacsayhuaman.jpg',
+  'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css',
+  'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
 ];

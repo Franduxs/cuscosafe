@@ -72,10 +72,33 @@ const TOUR_LANDMARKS = [
   }
 ];
 
-const MAP_LAYERS = {
-  osm: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-  satellite: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-  dark: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+// Estilos Vectoriales MapLibre GL (OpenFreeMap + Esri Satellite)
+const VECTOR_STYLES = {
+  liberty: 'https://tiles.openfreemap.org/styles/liberty',
+  dark: 'https://tiles.openfreemap.org/styles/dark',
+  satellite: {
+    version: 8,
+    sources: {
+      'esri-satellite': {
+        type: 'raster',
+        tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+        tileSize: 256
+      }
+    },
+    layers: [
+      {
+        id: 'esri-satellite-layer',
+        type: 'raster',
+        source: 'esri-satellite',
+        minzoom: 0,
+        maxzoom: 19
+      }
+    ]
+  }
+};
+
+const LEAFLET_LAYERS = {
+  osm: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
 };
 
 // 3. Estado Global del Sistema
@@ -92,7 +115,12 @@ const state = {
   sosCountdownInterval: null,
   sosCountdownValue: 3,
   pendingSosEvent: null,
-  mapStyle: 'osm',
+  mapStyle: 'liberty',
+  compassFollowActive: false,
+  is3dActive: true,
+  currentHeading: 0,
+  targetHeading: 0,
+  pitch: 40,
   isAudioGuideActive: false,
   currentLandmarkKey: 'qoricancha',
   telemetryBuffer: JSON.parse(localStorage.getItem('cuscosafe_telemetry') || '[]'),
@@ -105,53 +133,47 @@ const state = {
   ]
 };
 
-// 4. Inicialización de Mapas Leaflet
+// 4. Inicialización de Mapas (MapLibre GL Vectorial para Turista + Leaflet para Operador)
 let touristMap, operatorMap;
-let touristTileLayer, operatorTileLayer;
-let touristMarker, touristCircle, geofencePolygonLayer;
-let operatorMarkersGroup;
+let touristMarker;
+let touristLandmarkMarkers = [];
+let operatorTileLayer, operatorMarkersGroup;
+
+// Coordenadas GeoJSON [lng, lat] para MapLibre
+const SAFE_GEOJSON_COORDS = [
+  ...SAFE_POLYGON.map(p => [p[1], p[0]]),
+  [SAFE_POLYGON[0][1], SAFE_POLYGON[0][0]]
+];
 
 function initMaps() {
-  // Mapa de Turista
-  touristMap = L.map('tourist-map', {
-    zoomControl: false,
-    attributionControl: false
-  }).setView(YUYARIY_COORDS.plazaDeArmas, 16);
+  // 4.1 Mapa Vectorial GPU de Turista con MapLibre GL JS (WebGL 2.0)
+  try {
+    touristMap = new maplibregl.Map({
+      container: 'tourist-map',
+      style: VECTOR_STYLES[state.mapStyle],
+      center: [YUYARIY_COORDS.plazaDeArmas[1], YUYARIY_COORDS.plazaDeArmas[0]],
+      zoom: 16.5,
+      pitch: 40, // Perspectiva 3D inicial atractiva
+      bearing: 0,
+      attributionControl: false
+    });
 
-  touristTileLayer = L.tileLayer(MAP_LAYERS.osm, {
-    maxZoom: 19
-  }).addTo(touristMap);
+    touristMap.on('load', () => {
+      setupTouristMapLayers();
+      addTouristMapLandmarks();
+      initTouristMarker();
+    });
+  } catch (err) {
+    console.error('Error inicializando MapLibre GL:', err);
+  }
 
-  // Polígono seguro
-  geofencePolygonLayer = L.polygon(SAFE_POLYGON, {
-    color: '#D2A542',
-    weight: 2,
-    dashArray: '5, 5',
-    fillColor: '#B65B52',
-    fillOpacity: 0.10
-  }).addTo(touristMap);
-
-  // Puntos del tour
-  addTourLandmarks(touristMap);
-
-  // Marcador del Turista
-  const touristIcon = L.divIcon({
-    className: 'custom-tourist-pin',
-    html: '<div style="background:#2A9D8F;width:20px;height:20px;border-radius:50%;border:3px solid white;box-shadow:0 0 12px rgba(0,0,0,0.6);animation:pulse 2s infinite;"></div>',
-    iconSize: [20, 20],
-    iconAnchor: [10, 10]
-  });
-
-  touristMarker = L.marker(YUYARIY_COORDS.plazaDeArmas, { icon: touristIcon }).addTo(touristMap);
-  touristCircle = L.circle(YUYARIY_COORDS.plazaDeArmas, { radius: 15, color: '#2A9D8F', fillOpacity: 0.15 }).addTo(touristMap);
-
-  // Mapa de Operador
+  // 4.2 Mapa Táctico de Operador con Leaflet
   operatorMap = L.map('operator-map', {
     zoomControl: false,
     attributionControl: false
   }).setView(YUYARIY_COORDS.plazaDeArmas, 15);
 
-  operatorTileLayer = L.tileLayer(MAP_LAYERS.osm, {
+  operatorTileLayer = L.tileLayer(LEAFLET_LAYERS.osm, {
     maxZoom: 19
   }).addTo(operatorMap);
 
@@ -163,12 +185,103 @@ function initMaps() {
     fillOpacity: 0.08
   }).addTo(operatorMap);
 
-  addTourLandmarks(operatorMap);
+  addTourLandmarksLeaflet(operatorMap);
   operatorMarkersGroup = L.layerGroup().addTo(operatorMap);
   updateOperatorMarkers();
 }
 
-function addTourLandmarks(mapInstance) {
+function setupTouristMapLayers() {
+  if (!touristMap) return;
+
+  if (!touristMap.getSource('yuyariy-geofence')) {
+    touristMap.addSource('yuyariy-geofence', {
+      type: 'geojson',
+      data: {
+        type: 'Feature',
+        geometry: {
+          type: 'Polygon',
+          coordinates: [SAFE_GEOJSON_COORDS]
+        }
+      }
+    });
+  }
+
+  if (!touristMap.getLayer('geofence-fill')) {
+    touristMap.addLayer({
+      id: 'geofence-fill',
+      type: 'fill',
+      source: 'yuyariy-geofence',
+      paint: {
+        'fill-color': '#B65B52',
+        'fill-opacity': 0.14
+      }
+    });
+  }
+
+  if (!touristMap.getLayer('geofence-line')) {
+    touristMap.addLayer({
+      id: 'geofence-line',
+      type: 'line',
+      source: 'yuyariy-geofence',
+      paint: {
+        'line-color': '#D2A542',
+        'line-width': 2.5,
+        'line-dasharray': [2, 2]
+      }
+    });
+  }
+}
+
+function addTouristMapLandmarks() {
+  touristLandmarkMarkers.forEach(m => m.remove());
+  touristLandmarkMarkers = [];
+
+  TOUR_LANDMARKS.forEach(lm => {
+    const el = document.createElement('div');
+    el.className = 'custom-landmark-pin';
+    el.innerHTML = `
+      <div style="background:#B65B52;border:2.5px solid #D2A542;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(0,0,0,0.5);font-size:14px;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.18)'" onmouseout="this.style.transform='scale(1.0)'">
+        ${lm.icon}
+      </div>
+    `;
+
+    const popupHtml = `
+      <div style="min-width:180px; font-family:sans-serif; padding:4px;">
+        <strong style="color:#28323D; font-size:12.5px;">${lm.icon} ${lm.name}</strong>
+        <p style="font-size:10.5px; color:#4A5568; margin:4px 0 8px 0; line-height:1.3;">${lm.desc}</p>
+        <div style="display:flex; gap:6px;">
+          <button onclick="openVrModal('${lm.id}')" style="background:#B65B52; color:white; border:none; padding:5px 8px; border-radius:6px; font-size:10px; font-weight:700; cursor:pointer;">🥽 Ver VR 360°</button>
+          <button onclick="narrateText('${lm.narration.replace(/'/g, "\\'")}')" style="background:#28323D; color:#D2A542; border:none; padding:5px 8px; border-radius:6px; font-size:10px; font-weight:700; cursor:pointer;">🎙️ Narrar</button>
+        </div>
+      </div>
+    `;
+
+    const popup = new maplibregl.Popup({ offset: 18, closeButton: false }).setHTML(popupHtml);
+    const marker = new maplibregl.Marker({ element: el })
+      .setLngLat([lm.coords[1], lm.coords[0]])
+      .setPopup(popup)
+      .addTo(touristMap);
+
+    touristLandmarkMarkers.push(marker);
+  });
+}
+
+function initTouristMarker() {
+  if (touristMarker) touristMarker.remove();
+
+  const markerEl = document.createElement('div');
+  markerEl.className = 'tourist-direction-marker';
+  markerEl.innerHTML = `
+    <span class="tourist-arrow" id="tourist-marker-arrow">▲</span>
+    <div class="tourist-pulse-dot"></div>
+  `;
+
+  touristMarker = new maplibregl.Marker({ element: markerEl })
+    .setLngLat([state.currentPosition.lng, state.currentPosition.lat])
+    .addTo(touristMap);
+}
+
+function addTourLandmarksLeaflet(mapInstance) {
   TOUR_LANDMARKS.forEach(lm => {
     const marker = L.circleMarker(lm.coords, {
       radius: 7,
@@ -272,10 +385,8 @@ function startGpsTracking() {
 function updateTouristPosition(lat, lng, accuracy = 5, recordToBuffer = true) {
   state.currentPosition = { lat, lng, accuracy };
 
-  if (touristMarker && touristCircle) {
-    touristMarker.setLatLng([lat, lng]);
-    touristCircle.setLatLng([lat, lng]);
-    touristCircle.setRadius(accuracy);
+  if (touristMarker) {
+    touristMarker.setLngLat([lng, lat]);
   }
 
   // Actualizar también en el array del grupo
@@ -514,14 +625,20 @@ function toggleTourSimulation() {
       state.walkStep = (state.walkStep + 1) % TOUR_WALK_POINTS.length;
       const pt = TOUR_WALK_POINTS[state.walkStep];
       updateTouristPosition(pt[0], pt[1], 4, true);
-      touristMap.panTo(pt);
+      if (touristMap) {
+        touristMap.easeTo({ center: [pt[1], pt[0]], duration: 1000 });
+      }
     }, 3500);
   }
 }
 
 function centerOnUser() {
   if (touristMap && state.currentPosition) {
-    touristMap.setView([state.currentPosition.lat, state.currentPosition.lng], 17);
+    touristMap.flyTo({
+      center: [state.currentPosition.lng, state.currentPosition.lat],
+      zoom: 17,
+      duration: 800
+    });
   }
 }
 
@@ -566,7 +683,9 @@ function triggerOutOfBoundsTest() {
   const outsideLat = -13.5350;
   const outsideLng = -71.9600;
   updateTouristPosition(outsideLat, outsideLng, 8, true);
-  touristMap.setView([outsideLat, outsideLng], 15);
+  if (touristMap) {
+    touristMap.flyTo({ center: [outsideLng, outsideLat], zoom: 15, duration: 800 });
+  }
 }
 
 // 13. UI Navigation & Banners
@@ -579,7 +698,7 @@ function switchTab(viewName, btnElem) {
 
   // Redimensionar mapas al cambiar pestañas
   setTimeout(() => {
-    if (viewName === 'tourist' && touristMap) touristMap.invalidateSize();
+    if (viewName === 'tourist' && touristMap) touristMap.resize();
     if (viewName === 'operator' && operatorMap) {
       operatorMap.invalidateSize();
       updateOperatorTable();
@@ -609,27 +728,192 @@ function closeAgencyInfoModal() {
   if (modal) modal.classList.add('modal-hidden');
 }
 
-// 14. Selector Dinámico de Capas de Mapa (OpenStreetMap / Satélite Esri / Pizarra Nocturna)
+// 14. Selector Dinámico de Capas Vectoriales (OpenFreeMap Liberty / Satélite Esri / Dark)
 function toggleMapLayer() {
-  const modes = ['osm', 'satellite', 'dark'];
+  const modes = ['liberty', 'satellite', 'dark'];
   const nextIdx = (modes.indexOf(state.mapStyle) + 1) % modes.length;
   state.mapStyle = modes[nextIdx];
 
-  if (touristTileLayer) touristMap.removeLayer(touristTileLayer);
-  touristTileLayer = L.tileLayer(MAP_LAYERS[state.mapStyle], { maxZoom: 19 }).addTo(touristMap);
-  touristTileLayer.bringToBack();
-
   const btn = document.getElementById('btn-map-layer');
+
+  if (touristMap) {
+    touristMap.setStyle(VECTOR_STYLES[state.mapStyle]);
+    touristMap.once('style.load', () => {
+      setupTouristMapLayers();
+    });
+  }
+
   if (state.mapStyle === 'satellite') {
-    btn.innerHTML = '🌙 Noche';
+    if (btn) btn.innerHTML = '🌙 Noche';
     showBanner('🛰️ Modo Satélite HD activado (Fotografía aérea de precisión)');
   } else if (state.mapStyle === 'dark') {
-    btn.innerHTML = '🗺️ Calles';
-    showBanner('🌙 Modo Nocturno Andino activado (Contraste dorado sobre pizarra)');
+    if (btn) btn.innerHTML = '🗺️ Calles';
+    showBanner('🌙 Modo Nocturno Andino activado (Pizarra y contraste dorado)');
   } else {
-    btn.innerHTML = '🛰️ Satélite';
-    showBanner('🗺️ Modo Calles OpenStreetMap activado');
+    if (btn) btn.innerHTML = '🛰️ Satélite';
+    showBanner('🗺️ Modo Calles Vectorial OpenFreeMap Ultra Nítido activado');
   }
+}
+
+// 14.1 Motor de Brújula Móvil 360° y Navegación Heading-Up (WebGL GPU)
+class MobileCompassManager {
+  constructor() {
+    this.currentHeading = 0;
+    this.targetHeading = 0;
+    this.isListening = false;
+    this.animFrameId = null;
+    this.deadband = 0.5; // Supresión de temblor de pulso (<0.5°)
+    this.lerpFactor = 0.20; // Interpolación suave a 60fps
+  }
+
+  start() {
+    if (this.isListening) return;
+
+    const onOrientation = (e) => {
+      let heading = null;
+
+      // 1. iOS Safari (0 a 360, 0 = Norte Magnético con compensación de inclinación)
+      if (e.webkitCompassHeading !== undefined && e.webkitCompassHeading !== null) {
+        heading = e.webkitCompassHeading;
+      } else if (e.absolute === true && e.alpha !== null) {
+        // 2. Android Chrome deviceorientationabsolute
+        heading = (360 - e.alpha) % 360;
+      } else if (e.alpha !== null) {
+        // 3. Fallback Android estándar
+        heading = (360 - e.alpha) % 360;
+      }
+
+      if (heading !== null && !isNaN(heading)) {
+        // Compensación de orientación de pantalla (retrato vs apaisado)
+        const screenAngle = (window.screen.orientation ? window.screen.orientation.angle : (window.orientation || 0)) || 0;
+        this.targetHeading = (heading + screenAngle + 360) % 360;
+      }
+    };
+
+    if ('ondeviceorientationabsolute' in window) {
+      window.addEventListener('deviceorientationabsolute', onOrientation, true);
+    } else {
+      window.addEventListener('deviceorientation', onOrientation, true);
+    }
+
+    this.isListening = true;
+    this.runLoop();
+  }
+
+  runLoop() {
+    const step = () => {
+      // Diferencia angular por la ruta más corta [-180, 180]
+      const diff = ((this.targetHeading - this.currentHeading + 540) % 360) - 180;
+
+      if (Math.abs(diff) >= this.deadband) {
+        this.currentHeading = (this.currentHeading + diff * this.lerpFactor + 360) % 360;
+      }
+
+      this.render(this.currentHeading);
+      this.animFrameId = requestAnimationFrame(step);
+    };
+    this.animFrameId = requestAnimationFrame(step);
+  }
+
+  render(heading) {
+    const roundHeading = Math.round(heading);
+    state.currentHeading = roundHeading;
+
+    // 1. Flecha dorada sobre el marcador del turista
+    const arrow = document.getElementById('tourist-marker-arrow');
+    if (arrow) {
+      if (state.compassFollowActive) {
+        // Si el mapa gira con el usuario, la vista al frente es recta (0°)
+        arrow.style.transform = 'rotate(0deg)';
+      } else {
+        // Si el mapa está fijo al Norte, la flecha indica hacia dónde mira el celular
+        arrow.style.transform = `rotate(${roundHeading}deg)`;
+      }
+    }
+
+    // 2. Rotación dinámica continua 360° del mapa vectorial (Modo Heading-Up)
+    if (state.compassFollowActive && touristMap) {
+      touristMap.setBearing(roundHeading);
+    }
+
+    // 3. Brújula en HUD superior (indica el Norte en tiempo real)
+    const compassArrow = document.getElementById('compass-icon');
+    const compassText = document.getElementById('compass-text');
+    if (compassArrow) {
+      const currentBearing = touristMap ? touristMap.getBearing() : 0;
+      compassArrow.style.transform = `rotate(${-currentBearing}deg)`;
+    }
+    if (compassText) {
+      const cardinals = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
+      const card = cardinals[Math.round(roundHeading / 45) % 8];
+      compassText.textContent = `${card} ${roundHeading}°`;
+    }
+  }
+}
+
+const compassManager = new MobileCompassManager();
+
+// Activar o desactivar seguimiento 360° con brújula
+async function toggleCompassFollow() {
+  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+    try {
+      const permission = await DeviceOrientationEvent.requestPermission();
+      if (permission !== 'granted') {
+        showBanner('⚠️ Permiso de sensor de brújula denegado en Safari.');
+        return;
+      }
+    } catch (err) {
+      console.warn('Compass permission request error:', err);
+    }
+  }
+
+  state.compassFollowActive = !state.compassFollowActive;
+  compassManager.start();
+
+  const btn = document.getElementById('btn-compass-follow');
+  if (btn) {
+    btn.classList.toggle('active', state.compassFollowActive);
+    btn.innerHTML = state.compassFollowActive ? '🧭 Brújula 360° ON' : '🧭 Brújula 360°';
+  }
+
+  if (state.compassFollowActive) {
+    showBanner('🧭 Modo Heading-Up Activado: El mapa gira 360° en tiempo real según donde apuntes tu celular.');
+  } else {
+    showBanner('🧭 Modo Fijo Activado: El mapa mantiene orientación manual.');
+  }
+}
+
+// Alternar perspectiva 3D (Tilt WebGL)
+function toggle3dPerspective() {
+  state.is3dActive = !state.is3dActive;
+  const targetPitch = state.is3dActive ? 48 : 0;
+  state.pitch = targetPitch;
+
+  if (touristMap) {
+    touristMap.easeTo({ pitch: targetPitch, duration: 800 });
+  }
+
+  const btn = document.getElementById('btn-3d-tilt');
+  if (btn) {
+    btn.classList.toggle('active', state.is3dActive);
+    btn.innerHTML = state.is3dActive ? '📐 3D Tilt ON' : '📐 3D Tilt';
+  }
+
+  showBanner(state.is3dActive ? '📐 Perspectiva 3D Vectorial Activada (48°).' : '📐 Vista Cenital 2D Plana Activada (0°).');
+}
+
+// Reorientar el mapa al Norte (0°)
+function resetMapNorth() {
+  if (touristMap) {
+    touristMap.easeTo({ bearing: 0, duration: 600 });
+  }
+  state.compassFollowActive = false;
+  const btn = document.getElementById('btn-compass-follow');
+  if (btn) {
+    btn.classList.remove('active');
+    btn.innerHTML = '🧭 Brújula 360°';
+  }
+  showBanner('🧭 Mapa orientado al Norte (0°).');
 }
 
 // 15. Brújula Espacial y Radar HUD en Tiempo Real
@@ -709,7 +993,12 @@ function selectLandmark(key, chipElem) {
   }
 
   if (touristMap) {
-    touristMap.flyTo(lm.coords, 17, { duration: 1.2 });
+    touristMap.flyTo({
+      center: [lm.coords[1], lm.coords[0]],
+      zoom: 17.5,
+      pitch: state.is3dActive ? 48 : 0,
+      duration: 1200
+    });
   }
 
   updateSpatialHud();
@@ -1019,4 +1308,5 @@ window.addEventListener('DOMContentLoaded', () => {
   updateSpatialHud();
   updateBufferUI();
   updateOperatorTable();
+  compassManager.start();
 });

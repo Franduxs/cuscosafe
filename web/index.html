@@ -14,7 +14,8 @@
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <link rel="icon" type="image/png" href="icons/icon-192.png">
 
-  <!-- Leaflet OpenStreetMap CSS -->
+  <!-- MapLibre GL Vector Map CSS & Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
   <link rel="stylesheet" href="style.css">
@@ -62,7 +63,7 @@
       <div class="map-wrapper">
         <!-- Top Spatial HUD Bar (Compass, Next Landmark & Layer Switcher) -->
         <div class="spatial-hud-bar">
-          <div class="hud-pill hud-compass" id="hud-compass" title="Orientación espacial">
+          <div class="hud-pill hud-compass" id="hud-compass" onclick="resetMapNorth()" title="Toca para orientar al Norte">
             <span class="compass-icon" id="compass-icon">🧭</span>
             <span class="compass-text" id="compass-text">N 0°</span>
           </div>
@@ -71,8 +72,8 @@
             <span class="landmark-name" id="hud-landmark-name">Qoricancha</span>
             <span class="landmark-dist" id="hud-landmark-dist">· 240m</span>
           </div>
-          <button class="hud-btn-layer" onclick="toggleMapLayer()" id="btn-map-layer" title="Cambiar mapa: Satélite / Calles / Noche">
-            🛰️ Satélite
+          <button class="hud-btn-layer" onclick="toggleMapLayer()" id="btn-map-layer" title="Cambiar mapa: Vectorial / Satélite / Noche">
+            🗺️ Vector
           </button>
         </div>
 
@@ -80,6 +81,12 @@
 
         <!-- Floating Innovation Action Bar -->
         <div class="map-floating-bar">
+          <button class="btn-float btn-compass-rotate" onclick="toggleCompassFollow()" id="btn-compass-follow" title="Girar mapa automáticamente según orientación del celular">
+            🧭 Brújula 360°
+          </button>
+          <button class="btn-float btn-3d-glow" onclick="toggle3dPerspective()" id="btn-3d-tilt" title="Alternar perspectiva 3D del mapa">
+            📐 3D Tilt
+          </button>
           <button class="btn-float btn-vr-glow" onclick="openVrModal()" title="Visor de Realidad Virtual 360° EPG YUYARIY">
             🥽 VR 360°
           </button>
@@ -415,7 +422,8 @@
     </button>
   </nav>
 
-  <!-- Leaflet JS -->
+  <!-- MapLibre GL Vector Engine & Leaflet JS -->
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="app.js"></script>
 </body>
