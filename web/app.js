@@ -541,6 +541,16 @@ function dismissBanner() {
   document.getElementById('alert-banner').classList.add('alert-hidden');
 }
 
+function openAgencyInfoModal() {
+  const modal = document.getElementById('agency-info-modal');
+  if (modal) modal.classList.remove('modal-hidden');
+}
+
+function closeAgencyInfoModal() {
+  const modal = document.getElementById('agency-info-modal');
+  if (modal) modal.classList.add('modal-hidden');
+}
+
 // Conectividad nativa del navegador
 window.addEventListener('online', () => {
   if (!state.isSimulatedOffline) {

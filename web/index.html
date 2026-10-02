@@ -7,7 +7,7 @@
 
   <!-- PWA & iOS Safari Configuration -->
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#800020">
+  <meta name="theme-color" content="#28323D">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="CuscoSafe">
@@ -22,11 +22,11 @@
 <body>
   <!-- Header Bar -->
   <header class="app-header">
-    <div class="brand-group">
-      <div class="brand-logo">CS</div>
+    <div class="brand-group" onclick="openAgencyInfoModal()" title="Ver ficha técnica de EPG YUYARIY">
+      <img src="icons/icon-192.png" alt="EPG YUYARIY" class="brand-logo-img">
       <div class="brand-text">
         <h1 class="brand-title">CuscoSafe</h1>
-        <p class="brand-sub">EPG YUYARIY S.A.C. · City Tour VR</p>
+        <p class="brand-sub">EPG YUYARIY · Tours con VR ℹ️</p>
       </div>
     </div>
     <div class="header-badges">
@@ -69,6 +69,12 @@
 
       <!-- Tourist Control Card -->
       <div class="tourist-card">
+        <!-- Brand Pill -->
+        <div class="tour-brand-pill" onclick="openAgencyInfoModal()" title="Ver ficha técnica y detalles del tour">
+          <img src="icons/yuyariy-logo.png" alt="EPG YUYARIY" class="tour-brand-pill-img">
+          <span class="tour-brand-pill-text">EPG YUYARIY · Tours con VR ℹ️</span>
+        </div>
+
         <div class="card-status-row">
           <div class="status-col">
             <span class="label">Zona del Tour</span>
@@ -97,6 +103,16 @@
 
     <!-- VIEW 2: CENTRO DE CONTROL OPERADOR -->
     <section id="view-operator" class="view-section">
+      <!-- Agency Corporate Banner -->
+      <div class="yuyariy-banner-card" onclick="openAgencyInfoModal()" style="cursor: pointer;" title="Ficha de Operador EPG YUYARIY">
+        <img src="icons/yuyariy-banner.png" alt="EPG YUYARIY - Tours con Realidad Virtual" class="yuyariy-banner-img">
+        <div class="yuyariy-banner-meta">
+          <span class="meta-tag">🏢 EPG YUYARIY S.A.C.</span>
+          <span class="meta-tag meta-vr">🥽 City Tour VR</span>
+          <span class="meta-tag meta-offline">📶 Offline-First</span>
+        </div>
+      </div>
+
       <div class="hud-container">
         <div class="hud-card">
           <span class="hud-num" id="hud-active-tourists">12</span>
@@ -223,6 +239,33 @@
 
       <p class="modal-hint">Presiona cancelar si fue un toque accidental:</p>
       <button class="btn-cancel-sos" onclick="cancelSosAlert()">✕ CANCELAR ALERTA (Falsa Alarma)</button>
+    </div>
+  </div>
+
+  <!-- Modal Informativo EPG YUYARIY & Proyecto SENATI -->
+  <div id="agency-info-modal" class="modal-backdrop modal-hidden">
+    <div class="info-modal-card">
+      <div class="info-banner-header">
+        <img src="icons/yuyariy-banner.png" alt="EPG YUYARIY - Tours con Realidad Virtual">
+      </div>
+      <h3 style="color: var(--color-slate); font-size: 16px; margin-bottom: 6px; font-weight: 800;">EPG YUYARIY S.A.C.</h3>
+      <div class="info-badge-row">
+        <span class="meta-tag meta-vr">🥽 Tours con Realidad Virtual</span>
+        <span class="meta-tag">📍 Cusco, Perú</span>
+        <span class="meta-tag meta-offline">📶 Offline-First CNIU-126</span>
+      </div>
+      <p class="info-p">
+        <strong>EPG YUYARIY S.A.C.</strong> es una empresa cusqueña innovadora que combina recorridos patrimoniales del Centro Histórico del Cusco con experiencias inmersivas de <strong>Realidad Virtual (VR)</strong>.
+      </p>
+      <div class="info-box-tech">
+        <strong>🛡️ Sistema Inteligente CuscoSafe:</strong><br>
+        Monitoreo heurístico y asistencia de turistas ante caídas de señal móvil en callejones coloniales (cañones urbanos), garantizando comunicación continua mediante persistencia local Store & Forward y geocercas poligonales Ray-Casting.
+      </div>
+      <p class="info-p" style="font-size: 11px; color: #718096; margin-top: 8px;">
+        🎓 Proyecto de Innovación Técnica SENATI · Dual CFP Cusco<br>
+        <strong>Desarrollador / Investigador:</strong> Franduxs
+      </p>
+      <button class="btn-close-modal" onclick="closeAgencyInfoModal()">Cerrar Ficha</button>
     </div>
   </div>
 

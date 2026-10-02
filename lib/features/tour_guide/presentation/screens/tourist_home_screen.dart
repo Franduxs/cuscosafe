@@ -55,20 +55,31 @@ class _TouristHomeScreenState extends State<TouristHomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.asset(
+              'assets/icons/icon-192.png',
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) => const Icon(Icons.shield, color: Colors.white),
+            ),
+          ),
+        ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'CuscoSafe | City Tour',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
+              'CuscoSafe · City Tour',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: Colors.white),
             ),
             Text(
               'EPG YUYARIY S.A.C. · ${widget.touristName}',
-              style: const TextStyle(fontSize: 12, color: AppColors.primaryIncaGold),
+              style: const TextStyle(fontSize: 11.5, color: AppColors.primaryIncaGold, fontWeight: FontWeight.w600),
             ),
           ],
         ),
-        backgroundColor: AppColors.primaryBurgundy,
+        backgroundColor: AppColors.corporateSlate,
         actions: [
           IconButton(
             icon: Icon(

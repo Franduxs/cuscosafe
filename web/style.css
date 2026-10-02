@@ -1,13 +1,15 @@
 :root {
-  --color-burgundy: #800020;
-  --color-burgundy-dark: #5c0017;
-  --color-gold: #D4AF37;
-  --color-gold-light: #F3E5AB;
-  --color-stone: #1E1E24;
+  --color-burgundy: #B65B52;       /* Terracota Andino Oficial EPG YUYARIY */
+  --color-burgundy-dark: #8F3B33;  /* Terracota Sombra */
+  --color-slate: #28323D;          /* Pizarra Corporativa YUYARIY */
+  --color-slate-dark: #1A2129;     /* Pizarra Profunda */
+  --color-gold: #D2A542;           /* Dorado Casco VR YUYARIY */
+  --color-gold-light: #F7ECC9;     /* Crema Dorado */
+  --color-stone: #28323D;
   --color-bg: #F4F6F9;
   --color-surface: #FFFFFF;
   --color-safe: #2A9D8F;
-  --color-warning: #E76F51;
+  --color-warning: #D2A542;
   --color-danger: #E63946;
   --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --safe-top: env(safe-area-inset-top, 0px);
@@ -35,13 +37,14 @@ body {
 
 /* Header */
 .app-header {
-  background: linear-gradient(135deg, var(--color-burgundy), var(--color-burgundy-dark));
+  background: linear-gradient(135deg, var(--color-slate), var(--color-slate-dark));
   color: white;
   padding: 10px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  border-bottom: 2px solid var(--color-gold);
   z-index: 1000;
 }
 
@@ -49,6 +52,17 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+  cursor: pointer;
+}
+
+.brand-logo-img {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  object-fit: cover;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+  border: 1.5px solid var(--color-gold);
+  background: #FFFFFF;
 }
 
 .brand-logo {
@@ -56,7 +70,7 @@ body {
   height: 38px;
   border-radius: 10px;
   background: var(--color-gold);
-  color: var(--color-burgundy-dark);
+  color: var(--color-slate);
   font-weight: 900;
   font-size: 18px;
   display: flex;
@@ -116,14 +130,14 @@ body {
 
 /* APK Download Bar */
 .apk-download-bar {
-  background: #2a0812;
-  color: #F3E5AB;
+  background: var(--color-slate-dark);
+  color: var(--color-gold-light);
   padding: 6px 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-size: 11px;
-  border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+  border-bottom: 1px solid rgba(210, 165, 66, 0.35);
   z-index: 998;
 }
 
@@ -135,23 +149,27 @@ body {
 
 .apk-badge {
   background: var(--color-gold);
-  color: var(--color-burgundy-dark);
+  color: var(--color-slate);
   font-weight: 900;
-  font-size: 9px;
-  padding: 1px 5px;
+  font-size: 9.5px;
+  padding: 1px 6px;
   border-radius: 4px;
 }
 
 .btn-apk-dl {
-  background: var(--color-gold);
-  color: #2a0812;
+  background: linear-gradient(135deg, var(--color-gold), #B8861B);
+  color: #1A2129;
   text-decoration: none;
   font-weight: 800;
   font-size: 10.5px;
-  padding: 4px 10px;
+  padding: 4px 11px;
   border-radius: 6px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  transition: transform 0.1s;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  transition: transform 0.1s, box-shadow 0.2s;
+}
+
+.btn-apk-dl:active {
+  transform: scale(0.96);
 }
 
 .btn-apk-dl:active {
@@ -675,3 +693,161 @@ body {
 .nav-active .nav-icon {
   transform: translateY(-2px);
 }
+
+/* ==========================================================================
+   EPG YUYARIY S.A.C. - Identidad Corporativa y Componentes de Marca
+   ========================================================================== */
+
+/* Banner Corporativo Superior (Vista Operador) */
+.yuyariy-banner-card {
+  background: #FFFFFF;
+  border-radius: 14px;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 15px rgba(40, 50, 61, 0.08);
+  border: 1px solid rgba(210, 165, 66, 0.35);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.yuyariy-banner-img {
+  max-width: 100%;
+  height: auto;
+  max-height: 52px;
+  object-fit: contain;
+  margin-bottom: 8px;
+}
+
+.yuyariy-banner-meta {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.meta-tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: #EEF2F6;
+  color: var(--color-slate);
+}
+
+.meta-vr {
+  background: rgba(210, 165, 66, 0.18);
+  color: #926903;
+  border: 1px solid rgba(210, 165, 66, 0.4);
+}
+
+.meta-offline {
+  background: rgba(42, 157, 143, 0.15);
+  color: #1e7065;
+  border: 1px solid rgba(42, 157, 143, 0.35);
+}
+
+/* Pill / Botón de Marca en Vista Turista */
+.tour-brand-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #FFFFFF;
+  padding: 6px 12px;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(210, 165, 66, 0.4);
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tour-brand-pill:hover, .tour-brand-pill:active {
+  background: #FDF9F0;
+  transform: translateY(-1px);
+}
+
+.tour-brand-pill-img {
+  height: 22px;
+  width: auto;
+  object-fit: contain;
+}
+
+.tour-brand-pill-text {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-slate);
+}
+
+/* Modal Informativo EPG YUYARIY & Proyecto SENATI */
+.info-modal-card {
+  background: #FFFFFF;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 440px;
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+  border: 1.5px solid var(--color-gold);
+  max-height: 85vh;
+  overflow-y: auto;
+  text-align: left;
+}
+
+.info-banner-header {
+  background: #FFFFFF;
+  padding: 10px;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid rgba(40, 50, 61, 0.1);
+  margin-bottom: 14px;
+}
+
+.info-banner-header img {
+  max-width: 100%;
+  max-height: 55px;
+  object-fit: contain;
+}
+
+.info-badge-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.info-p {
+  font-size: 12.5px;
+  color: #4A5568;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.info-box-tech {
+  background: #F8FAFC;
+  border-left: 3px solid var(--color-burgundy);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: 12px 0;
+  font-size: 11.5px;
+  color: var(--color-slate);
+}
+
+.btn-close-modal {
+  width: 100%;
+  background: var(--color-slate);
+  color: #FFFFFF;
+  border: none;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 12px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.2s;
+}
+
+.btn-close-modal:hover {
+  background: var(--color-slate-dark);
+}
+

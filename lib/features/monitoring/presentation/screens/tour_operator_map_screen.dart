@@ -57,6 +57,17 @@ class _TourOperatorMapScreenState extends State<TourOperatorMapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Image.asset(
+              'assets/icons/icon-192.png',
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) => const Icon(Icons.shield, color: Colors.white),
+            ),
+          ),
+        ),
         title: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -65,12 +76,12 @@ class _TourOperatorMapScreenState extends State<TourOperatorMapScreen> {
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: Colors.white),
             ),
             Text(
-              'Monitoreo en Tiempo Real · City Tour Cusco',
-              style: TextStyle(fontSize: 12, color: AppColors.primaryIncaGold),
+              'Monitoreo en Tiempo Real · City Tour Cusco VR',
+              style: TextStyle(fontSize: 11.5, color: AppColors.primaryIncaGold, fontWeight: FontWeight.w600),
             ),
           ],
         ),
-        backgroundColor: AppColors.primaryBurgundy,
+        backgroundColor: AppColors.corporateSlate,
         actions: [
           IconButton(
             icon: const Icon(Icons.my_location, color: Colors.white),

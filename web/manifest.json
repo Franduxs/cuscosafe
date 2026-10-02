@@ -1,13 +1,13 @@
 {
-  "name": "CuscoSafe - Monitoreo Turístico EPG YUYARIY",
+  "name": "CuscoSafe - EPG YUYARIY S.A.C. (City Tour VR)",
   "short_name": "CuscoSafe",
-  "description": "Sistema Inteligente Offline-First de Asistencia y Monitoreo para el City Tour en Cusco",
+  "description": "Sistema Inteligente Offline-First de Asistencia y Monitoreo para EPG YUYARIY S.A.C. · Tours con Realidad Virtual",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#800020",
-  "theme_color": "#800020",
+  "background_color": "#28323D",
+  "theme_color": "#28323D",
   "icons": [
     {
       "src": "icons/icon-192.png",

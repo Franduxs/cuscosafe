@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cuscosafe-v2';
+const CACHE_NAME = 'cuscosafe-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -8,6 +8,9 @@ const ASSETS_TO_CACHE = [
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/apple-touch-icon.png',
+  './icons/yuyariy-logo.png',
+  './icons/yuyariy-banner.png',
+  './icons/yuyariy-emblem.png',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
 ];

@@ -46,11 +46,11 @@ class _CuscoSafeAppState extends State<CuscoSafeApp> {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
-        primaryColor: AppColors.primaryBurgundy,
+        primaryColor: AppColors.primaryTerracotta,
         scaffoldBackgroundColor: AppColors.surfaceLight,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.primaryBurgundy,
-          primary: AppColors.primaryBurgundy,
+          seedColor: AppColors.primaryTerracotta,
+          primary: AppColors.corporateSlate,
           secondary: AppColors.primaryIncaGold,
         ),
       ),
@@ -59,7 +59,7 @@ class _CuscoSafeAppState extends State<CuscoSafeApp> {
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _currentRoleIndex,
           onTap: (index) => setState(() => _currentRoleIndex = index),
-          selectedItemColor: AppColors.primaryBurgundy,
+          selectedItemColor: AppColors.primaryTerracotta,
           unselectedItemColor: AppColors.offlineGrey,
           items: const [
             BottomNavigationBarItem(
