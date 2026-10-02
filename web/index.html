@@ -81,6 +81,9 @@
 
         <!-- Floating Innovation Action Bar -->
         <div class="map-floating-bar">
+          <button class="btn-float btn-ar-glow" onclick="openArModal()" id="btn-ar-view" title="Cámara con Realidad Aumentada (AR) sobre calles del Cusco">
+            📷 Visor AR
+          </button>
           <button class="btn-float btn-compass-rotate" onclick="toggleCompassFollow()" id="btn-compass-follow" title="Girar mapa automáticamente según orientación del celular">
             🧭 Brújula 360°
           </button>
@@ -117,7 +120,11 @@
         <div class="tour-milestones-card">
           <div class="milestones-header">
             <span>🏛️ Hitos del City Tour VR</span>
-            <span class="milestone-sub">Toca para enfocar y narrar</span>
+            <div class="lang-switch-group">
+              <button class="lang-btn lang-active" onclick="setTourLanguage('es', this)" title="Español">🇵🇪 ES</button>
+              <button class="lang-btn" onclick="setTourLanguage('en', this)" title="English">🇬🇧 EN</button>
+              <button class="lang-btn" onclick="setTourLanguage('qu', this)" title="Runasimi (Quechua)">🏛️ QU</button>
+            </div>
           </div>
           <div class="milestones-scroll">
             <button class="milestone-chip chip-active" onclick="selectLandmark('plazaDeArmas', this)">
@@ -368,6 +375,56 @@
           <button class="vr-tab-btn vr-tab-active" onclick="switchVrScene('qoricancha', this)">Qoricancha</button>
           <button class="vr-tab-btn" onclick="switchVrScene('plazaDeArmas', this)">Plaza de Armas</button>
           <button class="vr-tab-btn" onclick="switchVrScene('sacsayhuaman', this)">Sacsayhuamán</button>
+        </div>
+      </div>
+    </div>
+  <!-- Modal Cámara Realidad Aumentada (AR Viewfinder EPG YUYARIY) -->
+  <div id="ar-modal" class="modal-backdrop modal-hidden">
+    <div class="ar-modal-container">
+      <div class="ar-top-toolbar">
+        <div class="ar-brand-badge">
+          <img src="icons/icon-192.png" alt="YUYARIY" class="ar-badge-icon">
+          <span>AR YUYARIY · Cámara Guía</span>
+        </div>
+        <div class="ar-actions">
+          <button class="btn-ar-tool" id="btn-ar-torch" onclick="toggleArTorch()" title="Linterna">🔦</button>
+          <button class="btn-ar-tool" onclick="takeArTourSnapshot()" title="Tomar foto de recuerdo con marco">📸 Foto</button>
+          <button class="btn-ar-close" onclick="closeArModal()">✕</button>
+        </div>
+      </div>
+
+      <!-- AR Tape & Compass -->
+      <div class="ar-compass-tape">
+        <div class="ar-tape-indicator">▼</div>
+        <div class="ar-tape-track" id="ar-tape-track"></div>
+      </div>
+
+      <!-- AR Viewport -->
+      <div class="ar-viewport" id="ar-viewport">
+        <video id="ar-video" autoplay playsinline muted></video>
+        <canvas id="ar-overlay-canvas"></canvas>
+
+        <!-- Floating Holographic Reticle -->
+        <div class="ar-crosshair-reticle">
+          <div class="ar-crosshair-circle"></div>
+          <div class="ar-crosshair-dot"></div>
+          <div class="ar-crosshair-lines"></div>
+        </div>
+
+        <!-- Floating AR Landmark Cards (Repositioned by compass azimuth) -->
+        <div class="ar-floating-landmarks" id="ar-floating-landmarks"></div>
+
+        <!-- AR Bottom HUD Card -->
+        <div class="ar-bottom-card" id="ar-bottom-card">
+          <div class="ar-target-badge" id="ar-target-badge">🎯 Enfocando Hito Histórico</div>
+          <div class="ar-target-info">
+            <h4 id="ar-target-title">Plaza de Armas (Huacaypata)</h4>
+            <p id="ar-target-dist">Distancia: 120m · Rumbo: 45° NE</p>
+          </div>
+          <div class="ar-target-actions">
+            <button class="btn-ar-speak" onclick="narrateArTarget()">🎙️ Narrar</button>
+            <button class="btn-ar-vr" onclick="openVrModalFromAr()">🥽 Ver VR</button>
+          </div>
         </div>
       </div>
     </div>

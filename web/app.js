@@ -32,41 +32,77 @@ const SAFE_POLYGON = [
   [-13.5130, -71.9870]  // Santa Teresa Nor-Oeste
 ];
 
-// 2.1 Hitos Oficiales del City Tour VR (EPG YUYARIY)
+// 2.1 Hitos Oficiales del City Tour VR (EPG YUYARIY) - Multilingüe (Español / English / Runasimi Quechua)
 const TOUR_LANDMARKS = [
   {
     id: 'plazaDeArmas',
     name: 'Plaza de Armas (Huacaypata)',
+    nameEn: 'Main Square (Huacaypata)',
+    nameQu: 'Huacaypata Hatun Kancha',
     coords: YUYARIY_COORDS.plazaDeArmas,
     icon: '🏛️',
     desc: 'Centro sagrado del Imperio Inca y núcleo monumental del Cusco colonial.',
+    descEn: 'Sacred center of the Inca Empire and historic monumental hub of colonial Cusco.',
+    descQu: 'Tawantinsuyupa sunqun, Pachakutiqpa hatun wasinkuna.',
+    narrations: {
+      es: 'Bienvenido a la Plaza de Armas del Cusco, conocida en tiempos incas como Huacaypata. Aquí confluían los cuatro suyos del Tahuantinsuyo. Con tus lentes VR YUYARIY puedes apreciar cómo lucían los palacios de Pachacútec y Huayna Cápac.',
+      en: 'Welcome to the Plaza de Armas of Cusco, historically known as Huacaypata. The four quarters of the Inca Empire converged right here. With your YUYARIY VR headset, witness how the palaces of Pachacutec and Huayna Capac looked five centuries ago.',
+      qu: 'Allillanchu! Allin hamusqaykichik Huacaypataman, Tawantinsuyupa sunqunman. Pachakutiqpa hatun wasinkunata qhaway YUYARIY Realidad Virtual nisqawan.'
+    },
     narration: 'Bienvenido a la Plaza de Armas del Cusco, conocida en tiempos incas como Huacaypata. Aquí confluían los cuatro suyos del Tahuantinsuyo. Con tus lentes VR YUYARIY puedes apreciar cómo lucían los palacios de Pachacútec y Huayna Cápac.',
     vrImage: 'icons/vr_plaza.jpg'
   },
   {
     id: 'qoricancha',
     name: 'Qoricancha (Templo del Sol)',
+    nameEn: 'Qoricancha (Temple of the Sun)',
+    nameQu: 'Qorikancha (Intipa Wasin)',
     coords: YUYARIY_COORDS.qoricancha,
     icon: '☀️',
     desc: 'El recinto de adoración al Sol más fastuoso del Tahuantinsuyo.',
+    descEn: 'The most opulent ceremonial sanctuary dedicated to the Sun in the Inca Empire.',
+    descQu: 'Inti Taytapa yupaychana wasin, qoriwan qatasqa pirqakuna.',
+    narrations: {
+      es: 'Te encuentras en las inmediaciones del Qoricancha, el Templo del Sol. Sus muros de piedra andesita pulida estaban forrados en planchas de oro macizo. La experiencia de Realidad Virtual recrea el resplandor sagrado del Inti Raymi.',
+      en: 'You are standing near the sacred Qoricancha, the Temple of the Sun. Its polished andesite stone walls were once entirely covered in solid gold plates. Experience the sacred radiance of Inti Raymi through YUYARIY VR.',
+      qu: 'Qorikanchaman chayamurqanki, Inti Taytanchikpa wasinman. Chay rumi pirqakuna qoriwan qatasqa karqan. Inti Raymipa k\'anchayninta YUYARIY VR nisqawan rikuy.'
+    },
     narration: 'Te encuentras en las inmediaciones del Qoricancha, el Templo del Sol. Sus muros de piedra andesita pulida estaban forrados en planchas de oro macizo. La experiencia de Realidad Virtual recrea el resplandor sagrado del Inti Raymi.',
     vrImage: 'icons/vr_qoricancha.jpg'
   },
   {
     id: 'sacsayhuaman',
     name: 'Fortaleza Sacsayhuamán',
+    nameEn: 'Sacsayhuaman Fortress',
+    nameQu: 'Saqsaywaman Hatun Pukara',
     coords: YUYARIY_COORDS.sacsayhuaman,
     icon: '🗿',
     desc: 'Murallas megalíticas ciclópeas con piedras de más de 120 toneladas.',
-    narration: 'Avanzamos hacia Sacsayhuamán. Esta impresionante fortaleza y centro astronómico cuenta con tres niveles de murallas ciclópeas labradas con precisión milimétrica.',
+    descEn: 'Cyclopean megalithic ramparts crafted with stones weighing over 120 tons.',
+    descQu: 'Kinsa patapatakuna, pachak iskay chunka tonelada rumiwan ruwasqa.',
+    narrations: {
+      es: 'Avanzamos hacia Sacsayhuamán. Esta impresionante fortaleza y centro astronómico cuenta con tres niveles de murallas ciclópeas labradas con piedras de más de ciento veinte toneladas.',
+      en: 'We ascend towards Sacsayhuaman. This colossal fortress and astronomical temple features three zigzagging levels of cyclopean stone megaliths weighing over 120 tons each.',
+      qu: 'Saqsaywaman hatun pukraman chayamunchik. Pachakutiqpa ruwachisqan kinsa patapatakuna, pachak iskay chunka tonelada rumi hatun kallpawan churasqa.'
+    },
+    narration: 'Avanzamos hacia Sacsayhuamán. Esta impresionante fortaleza y centro astronómico cuenta con tres niveles de murallas ciclópeas labradas con piedras de más de ciento veinte toneladas.',
     vrImage: 'icons/vr_sacsayhuaman.jpg'
   },
   {
     id: 'sanPedro',
     name: 'Mercado Central San Pedro',
+    nameEn: 'San Pedro Central Market',
+    nameQu: 'San Pedro Qhatu Wasi',
     coords: YUYARIY_COORDS.sanPedro,
     icon: '🛍️',
     desc: 'Histórico mercado colonial y centro de intercambio andino tradicional.',
+    descEn: 'Historic market designed by Gustave Eiffel, the cultural heart of Andean trade.',
+    descQu: 'Gustave Eiffel ruwasqan hatun qhatu wasi, lliwmanta lliw mikhunakuna.',
+    narrations: {
+      es: 'Mercado Central de San Pedro, construido en mil novecientos veinticinco y diseñado por el ingeniero Gustave Eiffel. Es el punto neurálgico del trueque y tradición gastronómica cusqueña.',
+      en: 'San Pedro Central Market, built in 1925 and designed by engineer Gustave Eiffel. It is the beating heart of Andean trade, native superfoods, and Cusco culinary heritage.',
+      qu: 'San Pedro qhatu wasiman chayamunchik. Gustave Eiffel ruwasqan. Kaypin kashan mikhunakuna, hampikuna, lliwmanta lliw qhatuqkuna.'
+    },
     narration: 'Mercado Central de San Pedro, construido en mil novecientos veinticinco y diseñado por el ingeniero Gustave Eiffel. Es el punto neurálgico del trueque y tradición gastronómica cusqueña.',
     vrImage: 'icons/vr_plaza.jpg'
   }
@@ -121,6 +157,8 @@ const state = {
   currentHeading: 0,
   targetHeading: 0,
   pitch: 40,
+  tourLanguage: 'es',
+  isHapticLocked: false,
   isAudioGuideActive: false,
   currentLandmarkKey: 'qoricancha',
   telemetryBuffer: JSON.parse(localStorage.getItem('cuscosafe_telemetry') || '[]'),
@@ -230,6 +268,45 @@ function setupTouristMapLayers() {
       }
     });
   }
+
+  // 3D Extruded Buildings Layer (Arquitectura Colonial & Inca en Relieve)
+  try {
+    if (touristMap.getSource('openmaptiles') && !touristMap.getLayer('3d-buildings-extrusion')) {
+      touristMap.addLayer({
+        id: '3d-buildings-extrusion',
+        source: 'openmaptiles',
+        'source-layer': 'building',
+        type: 'fill-extrusion',
+        minzoom: 14,
+        paint: {
+          'fill-extrusion-color': state.mapStyle === 'dark' ? '#212A35' : '#E8DEC9',
+          'fill-extrusion-height': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            14, 0,
+            15.5, ['coalesce', ['get', 'render_height'], 10]
+          ],
+          'fill-extrusion-base': [
+            'coalesce',
+            ['get', 'render_min_height'],
+            0
+          ],
+          'fill-extrusion-opacity': 0.85
+        }
+      });
+    }
+
+    // Luz Solar Andina (Simula la altitud del Cusco y relieve con sombras reales)
+    touristMap.setLight({
+      anchor: 'map',
+      color: state.mapStyle === 'dark' ? '#D2A542' : '#FFFDF2',
+      intensity: state.mapStyle === 'dark' ? 0.35 : 0.65,
+      position: [1.3, 115, 52]
+    });
+  } catch (e) {
+    console.log('3D building extrusion notice:', e);
+  }
 }
 
 function addTouristMapLandmarks() {
@@ -251,7 +328,7 @@ function addTouristMapLandmarks() {
         <p style="font-size:10.5px; color:#4A5568; margin:4px 0 8px 0; line-height:1.3;">${lm.desc}</p>
         <div style="display:flex; gap:6px;">
           <button onclick="openVrModal('${lm.id}')" style="background:#B65B52; color:white; border:none; padding:5px 8px; border-radius:6px; font-size:10px; font-weight:700; cursor:pointer;">🥽 Ver VR 360°</button>
-          <button onclick="narrateText('${lm.narration.replace(/'/g, "\\'")}')" style="background:#28323D; color:#D2A542; border:none; padding:5px 8px; border-radius:6px; font-size:10px; font-weight:700; cursor:pointer;">🎙️ Narrar</button>
+          <button onclick="narrateLandmarkById('${lm.id}')" style="background:#28323D; color:#D2A542; border:none; padding:5px 8px; border-radius:6px; font-size:10px; font-weight:700; cursor:pointer;">🎙️ Narrar</button>
         </div>
       </div>
     `;
@@ -848,6 +925,28 @@ class MobileCompassManager {
       const card = cardinals[Math.round(roundHeading / 45) % 8];
       compassText.textContent = `${card} ${roundHeading}°`;
     }
+
+    // 4. Radar Háptico Espacial ("Hot / Cold" Finder hacia el hito seleccionado)
+    const activeLm = TOUR_LANDMARKS.find(l => l.id === state.currentLandmarkKey) || TOUR_LANDMARKS[0];
+    if (activeLm && state.currentPosition) {
+      const targetBearing = calculateBearing(state.currentPosition.lat, state.currentPosition.lng, activeLm.coords[0], activeLm.coords[1]);
+      const bearingDiff = Math.abs(((targetBearing - roundHeading + 540) % 360) - 180);
+
+      const compassHud = document.getElementById('hud-compass');
+      if (bearingDiff < 14) {
+        if (arrow) arrow.classList.add('pulse-gold');
+        if (compassHud) compassHud.classList.add('pulse-gold');
+
+        if (!state.isHapticLocked) {
+          if (navigator.vibrate) navigator.vibrate([20, 25, 20]);
+          state.isHapticLocked = true;
+        }
+      } else {
+        if (arrow) arrow.classList.remove('pulse-gold');
+        if (compassHud) compassHud.classList.remove('pulse-gold');
+        state.isHapticLocked = false;
+      }
+    }
   }
 }
 
@@ -1004,7 +1103,7 @@ function selectLandmark(key, chipElem) {
   updateSpatialHud();
 
   if (state.isAudioGuideActive) {
-    narrateText(lm.narration);
+    narrateLandmarkById(lm.id);
   }
 }
 
@@ -1016,7 +1115,40 @@ function cycleToNextLandmark() {
   selectLandmark(nextKey, chips[nextIdx]);
 }
 
-// 17. Audio-Guía Inteligente Multimodal con Síntesis de Voz Nativa
+// 17. Audio-Guía Inteligente Multilingüe (Español / English / Runasimi Quechua)
+function setTourLanguage(lang = 'es', btnElem) {
+  state.tourLanguage = lang;
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('lang-active'));
+  if (btnElem) btnElem.classList.add('lang-active');
+
+  // Actualizar títulos del carrusel según idioma seleccionado
+  document.querySelectorAll('.milestone-chip').forEach((chip, idx) => {
+    const lm = TOUR_LANDMARKS[idx];
+    if (lm) {
+      const titleSpan = chip.querySelector('.chip-title');
+      if (titleSpan) {
+        if (lang === 'en') titleSpan.textContent = lm.nameEn.split(' (')[0];
+        else if (lang === 'qu') titleSpan.textContent = lm.nameQu.split(' (')[0];
+        else titleSpan.textContent = lm.name.split(' (')[0];
+      }
+    }
+  });
+
+  const langNames = { es: 'Español 🇵🇪', en: 'English 🇬🇧', qu: 'Runasimi (Quechua) 🏛️' };
+  showBanner(`🌐 Idioma de audio-guía: ${langNames[lang] || lang}`);
+  playAlertTone('safe');
+
+  if (state.isAudioGuideActive) {
+    narrateLandmarkById(state.currentLandmarkKey);
+  }
+}
+
+function narrateLandmarkById(id) {
+  const lm = TOUR_LANDMARKS.find(l => l.id === id) || TOUR_LANDMARKS[0];
+  const text = (lm.narrations && lm.narrations[state.tourLanguage]) ? lm.narrations[state.tourLanguage] : lm.narration;
+  narrateText(text, state.tourLanguage);
+}
+
 function toggleAudioGuide() {
   state.isAudioGuideActive = !state.isAudioGuideActive;
   const btn = document.getElementById('btn-audio');
@@ -1027,7 +1159,11 @@ function toggleAudioGuide() {
 
   if (state.isAudioGuideActive) {
     const lm = TOUR_LANDMARKS.find(l => l.id === state.currentLandmarkKey) || TOUR_LANDMARKS[0];
-    narrateText(`Iniciando audio guía oficial de EPG YUYARIY. ${lm.narration}`);
+    const intro = state.tourLanguage === 'en'
+      ? 'Starting official YUYARIY audio guide. '
+      : (state.tourLanguage === 'qu' ? 'YUYARIY rimayta qallarisun. ' : 'Iniciando audio guía oficial de EPG YUYARIY. ');
+    const text = (lm.narrations && lm.narrations[state.tourLanguage]) ? lm.narrations[state.tourLanguage] : lm.narration;
+    narrateText(intro + text, state.tourLanguage);
   } else {
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
     showBanner('🔇 Audio guía pausada.');
@@ -1036,25 +1172,32 @@ function toggleAudioGuide() {
 
 function narrateCurrentVrScene() {
   const lm = TOUR_LANDMARKS.find(l => l.id === vrState.activeLandmark) || TOUR_LANDMARKS[0];
-  narrateText(lm.narration);
+  const text = (lm.narrations && lm.narrations[state.tourLanguage]) ? lm.narrations[state.tourLanguage] : lm.narration;
+  narrateText(text, state.tourLanguage);
 }
 
-function narrateText(text) {
+function narrateText(text, lang = state.tourLanguage) {
   if (!('speechSynthesis' in window)) {
     showBanner('⚠️ Síntesis de voz no disponible en este dispositivo.');
     return;
   }
   window.speechSynthesis.cancel();
   const utter = new SpeechSynthesisUtterance(text);
-  utter.rate = 1.0;
+  utter.rate = lang === 'qu' ? 0.92 : 1.0;
   utter.pitch = 1.0;
-  utter.lang = 'es-PE';
 
   const voices = window.speechSynthesis.getVoices();
-  const esVoice = voices.find(v => v.lang.startsWith('es-PE') || v.lang.startsWith('es-ES') || v.lang.startsWith('es'));
-  if (esVoice) utter.voice = esVoice;
+  if (lang === 'en') {
+    utter.lang = 'en-US';
+    const enVoice = voices.find(v => v.lang.startsWith('en-US') || v.lang.startsWith('en-GB') || v.lang.startsWith('en'));
+    if (enVoice) utter.voice = enVoice;
+  } else {
+    utter.lang = 'es-PE';
+    const esVoice = voices.find(v => v.lang.startsWith('es-PE') || v.lang.startsWith('es-ES') || v.lang.startsWith('es'));
+    if (esVoice) utter.voice = esVoice;
+  }
 
-  showBanner('🎙️ Reproduciendo relato histórico oficial...');
+  showBanner(`🎙️ Audio-Guía (${lang.toUpperCase()}): Relato oficial en reproducción...`);
   window.speechSynthesis.speak(utter);
 }
 
@@ -1272,6 +1415,262 @@ function drawVrEye(ctx, img, xOffset, yOffset, viewW, viewH, yaw, pitch) {
     ctx.drawImage(img, srcX, srcY, part1W, srcH, xOffset, yOffset, viewPart1W, viewH);
     ctx.drawImage(img, 0, srcY, part2W, srcH, xOffset + viewPart1W, yOffset, viewPart2W, viewH);
   }
+}
+
+// ==========================================
+// 18.1 Motor de Cámara de Realidad Aumentada (AR Viewfinder)
+// EPG YUYARIY S.A.C. - Retículo Holográfico & Hitos Flotantes
+// ==========================================
+const arState = {
+  stream: null,
+  isActive: false,
+  isTorchOn: false,
+  animFrameId: null,
+  activeTargetKey: 'plazaDeArmas',
+  videoTrack: null
+};
+
+async function openArModal() {
+  const modal = document.getElementById('ar-modal');
+  if (modal) modal.classList.remove('modal-hidden');
+  arState.isActive = true;
+
+  initArCompassTape();
+
+  const video = document.getElementById('ar-video');
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+      audio: false
+    });
+    arState.stream = stream;
+    arState.videoTrack = stream.getVideoTracks()[0];
+    if (video) {
+      video.srcObject = stream;
+      video.play();
+    }
+  } catch (err) {
+    console.warn('Cámara AR física no disponible, activando modo visión sintética:', err);
+    showBanner('📷 Modo Visión Sintética AR: Sensor simulado en tiempo real.');
+    if (video) {
+      video.poster = 'icons/vr_plaza.jpg';
+    }
+  }
+
+  startArRenderLoop();
+  showBanner('📷 Visor AR Activo: Apunta tu cámara a los hitos del Cusco.');
+}
+
+function closeArModal() {
+  const modal = document.getElementById('ar-modal');
+  if (modal) modal.classList.add('modal-hidden');
+  arState.isActive = false;
+
+  if (arState.animFrameId) cancelAnimationFrame(arState.animFrameId);
+
+  if (arState.stream) {
+    arState.stream.getTracks().forEach(t => t.stop());
+    arState.stream = null;
+    arState.videoTrack = null;
+  }
+}
+
+async function toggleArTorch() {
+  if (!arState.videoTrack) {
+    showBanner('🔦 Linterna no disponible en este sensor.');
+    return;
+  }
+  const capabilities = arState.videoTrack.getCapabilities ? arState.videoTrack.getCapabilities() : {};
+  if (!capabilities.torch) {
+    showBanner('🔦 Linterna no soportada por el hardware de la cámara.');
+    return;
+  }
+
+  arState.isTorchOn = !arState.isTorchOn;
+  try {
+    await arState.videoTrack.applyConstraints({
+      advanced: [{ torch: arState.isTorchOn }]
+    });
+    const btn = document.getElementById('btn-ar-torch');
+    if (btn) btn.textContent = arState.isTorchOn ? '⚡ On' : '🔦';
+  } catch (e) {
+    console.warn('Torch error:', e);
+  }
+}
+
+function initArCompassTape() {
+  const track = document.getElementById('ar-tape-track');
+  if (!track || track.children.length > 0) return;
+
+  const points = [
+    { deg: 0, label: 'N' }, { deg: 30, label: '30°' }, { deg: 60, label: '60°' },
+    { deg: 90, label: 'E' }, { deg: 120, label: '120°' }, { deg: 150, label: '150°' },
+    { deg: 180, label: 'S' }, { deg: 210, label: '210°' }, { deg: 240, label: '240°' },
+    { deg: 270, label: 'O' }, { deg: 300, label: '300°' }, { deg: 330, label: '330°' },
+    { deg: 360, label: 'N' }
+  ];
+
+  track.innerHTML = points.map(p => `
+    <span class="ar-tape-tick ${isNaN(p.label) ? 'cardinal' : ''}">${p.label}</span>
+  `).join('');
+}
+
+function startArRenderLoop() {
+  const container = document.getElementById('ar-floating-landmarks');
+  const tapeTrack = document.getElementById('ar-tape-track');
+  const userPos = state.currentPosition || { lat: YUYARIY_COORDS.plazaDeArmas[0], lng: YUYARIY_COORDS.plazaDeArmas[1] };
+
+  function render() {
+    if (!arState.isActive) return;
+
+    const heading = state.currentHeading || 0;
+
+    // Desplazar cinta de brújula
+    if (tapeTrack) {
+      const offsetPx = (heading % 360) * 1.8;
+      tapeTrack.style.transform = `translateX(-${offsetPx}px)`;
+    }
+
+    if (container) {
+      let closestTarget = null;
+      let minAngleAbs = 999;
+      let htmlBadges = '';
+
+      TOUR_LANDMARKS.forEach(lm => {
+        const bearing = calculateBearing(userPos.lat, userPos.lng, lm.coords[0], lm.coords[1]);
+        const dist = Math.round(calculateDistance(userPos.lat, userPos.lng, lm.coords[0], lm.coords[1]));
+
+        // Ángulo relativo respecto hacia dónde apunta la cámara [-180, 180]
+        const relAngle = ((bearing - heading + 540) % 360) - 180;
+
+        // Campo de visión de la cámara (FOV ~ 72° = [-36°, +36°])
+        if (Math.abs(relAngle) <= 36) {
+          const xPercent = 50 + (relAngle / 36) * 44;
+          const yPercent = 40 + Math.min(22, (dist / 1200) * 15);
+          const isCentered = Math.abs(relAngle) < 12;
+
+          if (Math.abs(relAngle) < minAngleAbs) {
+            minAngleAbs = Math.abs(relAngle);
+            closestTarget = { lm, dist, bearing, isCentered };
+          }
+
+          const nameByLang = state.tourLanguage === 'en' ? lm.nameEn : (state.tourLanguage === 'qu' ? lm.nameQu : lm.name);
+
+          htmlBadges += `
+            <div class="ar-landmark-badge ${isCentered ? 'ar-badge-target' : ''}"
+                 style="left: ${xPercent.toFixed(1)}%; top: ${yPercent.toFixed(1)}%;"
+                 onclick="selectArTarget('${lm.id}')">
+              <span>${lm.icon}</span>
+              <span class="ar-badge-title">${nameByLang.split(' (')[0]}</span>
+              <span class="ar-badge-dist">· ${dist}m</span>
+            </div>
+          `;
+        }
+      });
+
+      container.innerHTML = htmlBadges;
+
+      // Actualizar tarjeta inferior con el hito enfocado
+      if (closestTarget) {
+        arState.activeTargetKey = closestTarget.lm.id;
+        updateArBottomCard(closestTarget.lm, closestTarget.dist, closestTarget.bearing);
+      }
+    }
+
+    arState.animFrameId = requestAnimationFrame(render);
+  }
+
+  if (arState.animFrameId) cancelAnimationFrame(arState.animFrameId);
+  arState.animFrameId = requestAnimationFrame(render);
+}
+
+function updateArBottomCard(lm, dist, bearing) {
+  const title = document.getElementById('ar-target-title');
+  const distEl = document.getElementById('ar-target-dist');
+  if (title) {
+    title.textContent = state.tourLanguage === 'en' ? lm.nameEn : (state.tourLanguage === 'qu' ? lm.nameQu : lm.name);
+  }
+  if (distEl) {
+    const card = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'][Math.round(bearing / 45) % 8];
+    distEl.textContent = `Distancia: ${dist}m · Rumbo: ${Math.round(bearing)}° ${card}`;
+  }
+}
+
+function selectArTarget(id) {
+  arState.activeTargetKey = id;
+  const lm = TOUR_LANDMARKS.find(l => l.id === id);
+  if (lm && state.currentPosition) {
+    const dist = Math.round(calculateDistance(state.currentPosition.lat, state.currentPosition.lng, lm.coords[0], lm.coords[1]));
+    const bearing = calculateBearing(state.currentPosition.lat, state.currentPosition.lng, lm.coords[0], lm.coords[1]);
+    updateArBottomCard(lm, dist, bearing);
+  }
+}
+
+function narrateArTarget() {
+  narrateLandmarkById(arState.activeTargetKey);
+}
+
+function openVrModalFromAr() {
+  const targetKey = arState.activeTargetKey;
+  closeArModal();
+  openVrModal(targetKey);
+}
+
+// Captura de Foto Turística con Marco Holográfico Oficial EPG YUYARIY
+function takeArTourSnapshot() {
+  const video = document.getElementById('ar-video');
+  const canvas = document.createElement('canvas');
+  const w = (video && video.videoWidth) ? video.videoWidth : 1280;
+  const h = (video && video.videoHeight) ? video.videoHeight : 720;
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d');
+
+  try {
+    if (video && video.videoWidth > 0) {
+      ctx.drawImage(video, 0, 0, w, h);
+    } else {
+      ctx.fillStyle = '#1A2129';
+      ctx.fillRect(0, 0, w, h);
+    }
+  } catch (e) {
+    ctx.fillStyle = '#1A2129';
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  // Marco elegante EPG YUYARIY
+  ctx.strokeStyle = '#D2A542';
+  ctx.lineWidth = 14;
+  ctx.strokeRect(10, 10, w - 20, h - 20);
+
+  // Esquinas doradas incaicas
+  ctx.fillStyle = '#B65B52';
+  ctx.fillRect(10, 10, 60, 12);
+  ctx.fillRect(10, 10, 12, 60);
+  ctx.fillRect(w - 70, 10, 60, 12);
+  ctx.fillRect(w - 22, 10, 12, 60);
+
+  // Franja inferior con metadatos
+  ctx.fillStyle = 'rgba(26, 33, 41, 0.88)';
+  ctx.fillRect(20, h - 90, w - 40, 70);
+
+  const activeLm = TOUR_LANDMARKS.find(l => l.id === arState.activeTargetKey) || TOUR_LANDMARKS[0];
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = 'bold 24px sans-serif';
+  ctx.fillText(`🏛️ ${activeLm.name} · CuscoSafe AR`, 40, h - 52);
+
+  ctx.fillStyle = '#D2A542';
+  ctx.font = '16px sans-serif';
+  const now = new Date().toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  ctx.fillText(`EPG YUYARIY S.A.C. · Tours con Realidad Virtual · Altitud: 3,399 m.s.n.m. · ${now}`, 40, h - 28);
+
+  const link = document.createElement('a');
+  link.download = `CuscoSafe_Recuerdo_${activeLm.id}_${Date.now()}.jpg`;
+  link.href = canvas.toDataURL('image/jpeg', 0.92);
+  link.click();
+
+  showBanner('📸 ¡Foto de recuerdo con marco oficial de EPG YUYARIY descargada con éxito!');
+  playAlertTone('safe');
 }
 
 // 19. Modal Altitud y Soroche
