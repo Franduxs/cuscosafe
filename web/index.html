@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=20261002-v4">
 </head>
 <body>
   <!-- Header Bar -->
@@ -163,11 +163,42 @@
 
         <!-- Big SOS Panic Button -->
         <div class="sos-wrapper">
-          <button id="btn-sos" class="btn-sos-pulse" ontouchstart="handleSosTrigger()" onclick="handleSosTrigger()">
+          <button id="btn-sos" class="btn-sos-pulse" ontouchstart="handleSosTrigger(event)" onclick="handleSosTrigger(event)">
             <span class="sos-icon">🚨</span>
             <span class="sos-text">SOS</span>
             <span class="sos-sub">Auxilio Inmediato</span>
           </button>
+        </div>
+
+        <!-- Directorio de Emergencia Turística de Cusco (Acceso Rápido 24/7) -->
+        <div class="emergency-quick-bar">
+          <div class="emergency-bar-title">
+            <span>🚨 Auxilio Turístico Cusco</span>
+            <span class="emergency-24h">24 Horas</span>
+          </div>
+          <div class="emergency-actions-grid">
+            <a href="tel:+5184249654" class="btn-emergency-action btn-poltur" title="Llamar a Policía de Turismo POLTUR Cusco">
+              <span class="action-icon">👮</span>
+              <div class="action-info">
+                <strong>POLTUR</strong>
+                <small>(084) 249654</small>
+              </div>
+            </a>
+            <a href="tel:106" class="btn-emergency-action btn-samu" title="Llamar a Ambulancias Médicas SAMU Cusco">
+              <span class="action-icon">🚑</span>
+              <div class="action-info">
+                <strong>SAMU 106</strong>
+                <small>Ambulancia</small>
+              </div>
+            </a>
+            <button type="button" class="btn-emergency-action btn-wa-share" onclick="shareLocationWhatsApp()" title="Enviar ubicación GPS exacta por WhatsApp">
+              <span class="action-icon">💬</span>
+              <div class="action-info">
+                <strong>WhatsApp</strong>
+                <small>Enviar GPS</small>
+              </div>
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -297,19 +328,34 @@
     </section>
   </main>
 
-  <!-- SOS Modal Countdown (Anti-False Alarm) -->
+  <!-- SOS Modal Countdown & Direct Rescue Dispatch (Anti-False Alarm) -->
   <div id="sos-modal" class="modal-backdrop modal-hidden">
     <div class="modal-card">
       <div class="modal-icon-pulse">🚨</div>
-      <h2 class="modal-title">EMERGENCIA SOS ACTIVADA</h2>
-      <p class="modal-desc">Transmitiendo alerta prioritaria a la Central de Operaciones EPG YUYARIY...</p>
+      <h2 class="modal-title" id="sos-modal-title">EMERGENCIA SOS ACTIVADA</h2>
+      <p class="modal-desc" id="sos-modal-desc">Transmitiendo alerta prioritaria a la Central de Operaciones EPG YUYARIY y registrando coordenadas GPS...</p>
       
-      <div class="countdown-circle">
+      <div class="countdown-circle" id="sos-countdown-circle">
         <span id="countdown-number">3</span>
       </div>
 
-      <p class="modal-hint">Presiona cancelar si fue un toque accidental:</p>
-      <button class="btn-cancel-sos" onclick="cancelSosAlert()">✕ CANCELAR ALERTA (Falsa Alarma)</button>
+      <div class="sos-modal-quick-contacts">
+        <div class="contacts-title">Líneas de Auxilio Inmediato Cusco:</div>
+        <div class="sos-direct-btns">
+          <a href="tel:+5184249654" class="btn-sos-call btn-call-poltur">
+            👮 Llamar POLTUR Cusco: (084) 249654
+          </a>
+          <a href="tel:106" class="btn-sos-call btn-call-samu">
+            🚑 Llamar SAMU Ambulancia: 106
+          </a>
+          <button type="button" class="btn-sos-call btn-call-wa" onclick="shareLocationWhatsApp()">
+            💬 Compartir Coordenadas GPS por WhatsApp
+          </button>
+        </div>
+      </div>
+
+      <p class="modal-hint" id="sos-modal-hint">Presiona cancelar si fue un toque accidental:</p>
+      <button class="btn-cancel-sos" id="btn-cancel-sos" onclick="cancelSosAlert()">✕ CANCELAR ALERTA (Falsa Alarma)</button>
     </div>
   </div>
 
@@ -378,6 +424,8 @@
         </div>
       </div>
     </div>
+  </div>
+
   <!-- Modal Cámara Realidad Aumentada (AR Viewfinder EPG YUYARIY) -->
   <div id="ar-modal" class="modal-backdrop modal-hidden">
     <div class="ar-modal-container">
@@ -395,7 +443,7 @@
 
       <!-- AR Tape & Compass -->
       <div class="ar-compass-tape">
-        <div class="ar-tape-indicator">▼</div>
+        <div class="ar-tape-indicator">▼ <span id="ar-tape-indicator-text">0° N</span></div>
         <div class="ar-tape-track" id="ar-tape-track"></div>
       </div>
 
@@ -403,6 +451,16 @@
       <div class="ar-viewport" id="ar-viewport">
         <video id="ar-video" autoplay playsinline muted></video>
         <canvas id="ar-overlay-canvas"></canvas>
+
+        <!-- Sensor / Camera Fallback Status Banner -->
+        <div id="ar-camera-banner" class="ar-camera-banner hidden">
+          <div class="ar-banner-icon">📷</div>
+          <div class="ar-banner-text">
+            <strong id="ar-banner-title">Modo Visión Sintética AR</strong>
+            <p id="ar-banner-desc">Sensor de cámara física no disponible.</p>
+          </div>
+          <button type="button" id="btn-ar-retry" class="btn-ar-retry" onclick="retryArCamera()">Reintentar</button>
+        </div>
 
         <!-- Floating Holographic Reticle -->
         <div class="ar-crosshair-reticle">
@@ -482,6 +540,6 @@
   <!-- MapLibre GL Vector Engine & Leaflet JS -->
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="app.js"></script>
+  <script src="app.js?v=20261002-v4"></script>
 </body>
 </html>

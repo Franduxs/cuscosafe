@@ -1,9 +1,11 @@
-const CACHE_NAME = 'cuscosafe-v6';
+const CACHE_NAME = 'cuscosafe-v4';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './style.css',
   './app.js',
+  './style.css?v=20261002-v4',
+  './app.js?v=20261002-v4',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',
@@ -37,6 +39,7 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
+            console.log('Purgando caché anterior:', key);
             return caches.delete(key);
           }
         })
@@ -51,7 +54,7 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
+    caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
       if (cachedResponse) {
         return cachedResponse;
       }

@@ -6,7 +6,7 @@
 // 1. Registro de Service Worker PWA
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').then((reg) => {
+    navigator.serviceWorker.register('./sw.js?v=20261002-v4').then((reg) => {
       console.log('✅ ServiceWorker CuscoSafe registrado:', reg.scope);
     }).catch((err) => {
       console.warn('⚠️ ServiceWorker error:', err);
@@ -546,24 +546,49 @@ function clearTelemetryBuffer() {
   updateBufferUI();
 }
 
-// 9. Manejo del Botón SOS (Pánico con Confirmación y Vibración)
-function handleSosTrigger() {
+// 9. Manejo del Botón SOS (Pánico con Confirmación, Vibración y Auxilio Directo)
+let lastSosTriggerTime = 0;
+function handleSosTrigger(e) {
+  if (e && e.type === 'touchstart' && e.cancelable) {
+    e.preventDefault();
+  }
+  const now = Date.now();
+  if (now - lastSosTriggerTime < 800) return;
+  lastSosTriggerTime = now;
+
   // Vibración táctil si el dispositivo la soporta
   if (navigator.vibrate) {
     navigator.vibrate([250, 100, 250, 100, 350]);
   }
   playAlertTone('sos');
 
-  // Abrir modal de cuenta regresiva
+  // Restablecer estado visual del modal
   state.sosCountdownValue = 3;
-  document.getElementById('countdown-number').textContent = state.sosCountdownValue;
-  document.getElementById('sos-modal').classList.remove('modal-hidden');
+  const countEl = document.getElementById('countdown-number');
+  const circleEl = document.getElementById('sos-countdown-circle');
+  const titleEl = document.getElementById('sos-modal-title');
+  const descEl = document.getElementById('sos-modal-desc');
+  const hintEl = document.getElementById('sos-modal-hint');
+  const cancelBtn = document.getElementById('btn-cancel-sos');
+
+  if (countEl) countEl.textContent = state.sosCountdownValue;
+  if (circleEl) circleEl.style.display = 'flex';
+  if (titleEl) titleEl.textContent = 'EMERGENCIA SOS ACTIVADA';
+  if (descEl) descEl.textContent = 'Transmitiendo alerta prioritaria a la Central de Operaciones EPG YUYARIY y registrando coordenadas GPS...';
+  if (hintEl) hintEl.textContent = 'Presiona cancelar si fue un toque accidental:';
+  if (cancelBtn) {
+    cancelBtn.textContent = '✕ CANCELAR ALERTA (Falsa Alarma)';
+    cancelBtn.onclick = cancelSosAlert;
+  }
+
+  const modal = document.getElementById('sos-modal');
+  if (modal) modal.classList.remove('modal-hidden');
 
   clearInterval(state.sosCountdownInterval);
   state.sosCountdownInterval = setInterval(() => {
     state.sosCountdownValue--;
     if (state.sosCountdownValue > 0) {
-      document.getElementById('countdown-number').textContent = state.sosCountdownValue;
+      if (countEl) countEl.textContent = state.sosCountdownValue;
       playAlertTone('sos');
     } else {
       clearInterval(state.sosCountdownInterval);
@@ -574,22 +599,51 @@ function handleSosTrigger() {
 
 function cancelSosAlert() {
   clearInterval(state.sosCountdownInterval);
-  document.getElementById('sos-modal').classList.add('modal-hidden');
+  const modal = document.getElementById('sos-modal');
+  if (modal) modal.classList.add('modal-hidden');
   showBanner('ℹ️ Alerta SOS cancelada por el usuario (Falsa alarma).');
 }
 
 function dispatchConfirmedSos() {
-  document.getElementById('sos-modal').classList.add('modal-hidden');
   state.activeSosAlerts++;
-  document.getElementById('hud-sos-count').textContent = state.activeSosAlerts;
+  const sosCount = document.getElementById('hud-sos-count');
+  if (sosCount) sosCount.textContent = state.activeSosAlerts;
 
-  // Marcar estado crítico en el grupo
-  state.touristsGroup[0].status = 'sos';
+  // Marcar estado crítico en el grupo de turistas
+  if (state.touristsGroup && state.touristsGroup.length > 0) {
+    state.touristsGroup[0].status = 'sos';
+  }
   updateOperatorMarkers();
   updateOperatorTable();
 
   // Guardar evento SOS prioritario en Store & Forward
-  saveTelemetryPoint(state.currentPosition.lat, state.currentPosition.lng, true);
+  const pos = state.currentPosition || { lat: YUYARIY_COORDS.plazaDeArmas[0], lng: YUYARIY_COORDS.plazaDeArmas[1] };
+  saveTelemetryPoint(pos.lat, pos.lng, true);
+
+  // Actualizar modal con confirmación de auxilio y acceso directo a rescate
+  const titleEl = document.getElementById('sos-modal-title');
+  const descEl = document.getElementById('sos-modal-desc');
+  const circleEl = document.getElementById('sos-countdown-circle');
+  const hintEl = document.getElementById('sos-modal-hint');
+  const cancelBtn = document.getElementById('btn-cancel-sos');
+
+  const latStr = pos.lat.toFixed(5);
+  const lngStr = pos.lng.toFixed(5);
+
+  if (titleEl) titleEl.textContent = '🚨 ALERTA SOS TRANSMITIDA';
+  if (circleEl) circleEl.style.display = 'none';
+  if (descEl) {
+    descEl.innerHTML = `<strong>Ubicación registrada:</strong> ${latStr}, ${lngStr} (Cusco · 3,399 m.s.n.m.)<br>` +
+      `Central EPG YUYARIY notificada. Comunícate directamente con la Policía de Turismo o SAMU mediante los botones directos:`;
+  }
+  if (hintEl) hintEl.textContent = 'Tu posición continúa siendo monitoreada en tiempo real por el Centro de Control.';
+  if (cancelBtn) {
+    cancelBtn.textContent = '✓ Entendido / Cerrar Ventana';
+    cancelBtn.onclick = () => {
+      const modal = document.getElementById('sos-modal');
+      if (modal) modal.classList.add('modal-hidden');
+    };
+  }
 
   const isOnline = navigator.onLine && !state.isSimulatedOffline;
   if (isOnline) {
@@ -597,6 +651,34 @@ function dispatchConfirmedSos() {
   } else {
     showBanner('🚨 ALERTA SOS RETENIDA: Sin señal 4G. Guardada en SQLite local; se transmitirá al detectar cobertura.');
   }
+}
+
+// Compartir ubicación en tiempo real por WhatsApp
+function shareLocationWhatsApp() {
+  const pos = state.currentPosition || {
+    lat: YUYARIY_COORDS.plazaDeArmas[0],
+    lng: YUYARIY_COORDS.plazaDeArmas[1]
+  };
+  const lat = pos.lat.toFixed(6);
+  const lng = pos.lng.toFixed(6);
+  const mapsUrl = `https://maps.google.com/?q=${lat},${lng}`;
+  const now = new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+  const msg = [
+    '🚨 *ALERTA DE EMERGENCIA SOS - TURISTA CUSCO*',
+    'Solicito auxilio turístico inmediato. Mi ubicación GPS en tiempo real:',
+    `📍 ${mapsUrl}`,
+    `🗺️ Coordenadas: ${lat}, ${lng}`,
+    `⏰ Reporte: ${now}`,
+    '🏢 Operador: EPG YUYARIY S.A.C. · CuscoSafe PWA',
+    '📞 Contactos de Emergencia Oficiales:',
+    '• Policía de Turismo Cusco (POLTUR): +51 84 249654',
+    '• SAMU Ambulancia: 106'
+  ].join('\n');
+
+  const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+  window.open(waUrl, '_blank');
+  showBanner('💬 Abriendo WhatsApp para compartir ubicación GPS de emergencia...');
 }
 
 // 10. Centro de Control del Operador
@@ -1425,10 +1507,53 @@ const arState = {
   stream: null,
   isActive: false,
   isTorchOn: false,
+  isSynthetic: false,
   animFrameId: null,
   activeTargetKey: 'plazaDeArmas',
   videoTrack: null
 };
+
+// Soporte de gestos táctiles y ratón en el Viewport AR (rotación manual 360°)
+let isArDragging = false;
+let arDragStartX = 0;
+let arHeadingAtDragStart = 0;
+
+function setupArViewportGestures() {
+  const vp = document.getElementById('ar-viewport');
+  if (!vp || vp._hasArGestures) return;
+  vp._hasArGestures = true;
+
+  const onStart = (clientX) => {
+    isArDragging = true;
+    arDragStartX = clientX;
+    arHeadingAtDragStart = state.currentHeading || 0;
+  };
+
+  const onMove = (clientX) => {
+    if (!isArDragging) return;
+    const deltaX = clientX - arDragStartX;
+    // 1 pixel = ~0.35 grados de rotación
+    const newHeading = (((arHeadingAtDragStart - (deltaX * 0.35)) % 360) + 360) % 360;
+    state.currentHeading = Math.round(newHeading);
+    if (compassManager) compassManager.targetHeading = state.currentHeading;
+  };
+
+  const onEnd = () => {
+    isArDragging = false;
+  };
+
+  vp.addEventListener('mousedown', (e) => onStart(e.clientX));
+  window.addEventListener('mousemove', (e) => onMove(e.clientX));
+  window.addEventListener('mouseup', onEnd);
+
+  vp.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 1) onStart(e.touches[0].clientX);
+  }, { passive: true });
+  vp.addEventListener('touchmove', (e) => {
+    if (e.touches.length === 1) onMove(e.touches[0].clientX);
+  }, { passive: true });
+  vp.addEventListener('touchend', onEnd);
+}
 
 async function openArModal() {
   const modal = document.getElementById('ar-modal');
@@ -1436,29 +1561,141 @@ async function openArModal() {
   arState.isActive = true;
 
   initArCompassTape();
+  setupArViewportGestures();
 
+  // Solicitar permiso de sensores de orientación (iOS Safari 13+)
+  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+    try {
+      const perm = await DeviceOrientationEvent.requestPermission();
+      if (perm === 'granted') {
+        compassManager.start();
+      }
+    } catch (e) {
+      console.warn('Permiso orientación AR:', e);
+    }
+  } else {
+    compassManager.start();
+  }
+
+  await startArCamera();
+  startArRenderLoop();
+  showBanner('📷 Visor AR Activo: Apunta tu cámara a los hitos del Cusco.');
+}
+
+async function startArCamera() {
   const video = document.getElementById('ar-video');
+  const banner = document.getElementById('ar-camera-banner');
+  if (banner) banner.classList.add('hidden');
+  arState.isSynthetic = false;
+
+  const isSecure = window.isSecureContext || ['localhost', '127.0.0.1'].includes(window.location.hostname);
+  const hasMediaDevices = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+
+  if (!isSecure) {
+    console.warn('AR: Contexto HTTP no seguro sin SSL');
+    activateSyntheticArMode(
+      '🔒 Conexión HTTP sin SSL',
+      'Los navegadores móviles requieren conexión segura (HTTPS) para habilitar la cámara en vivo. Activado el Modo Visión Sintética con retículo y brújula 360°.',
+      false
+    );
+    return;
+  }
+
+  if (!hasMediaDevices) {
+    console.warn('AR: mediaDevices no disponible');
+    activateSyntheticArMode(
+      '📷 Cámara no compatible',
+      'Tu navegador no soporta captura de cámara en vivo. Modo Visión Sintética activado.',
+      false
+    );
+    return;
+  }
+
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
       audio: false
     });
     arState.stream = stream;
     arState.videoTrack = stream.getVideoTracks()[0];
     if (video) {
       video.srcObject = stream;
-      video.play();
+      await video.play().catch(e => console.warn('Video play catch:', e));
+      video.classList.remove('ar-video-synthetic');
     }
+    if (banner) banner.classList.add('hidden');
   } catch (err) {
-    console.warn('Cámara AR física no disponible, activando modo visión sintética:', err);
-    showBanner('📷 Modo Visión Sintética AR: Sensor simulado en tiempo real.');
-    if (video) {
-      video.poster = 'icons/vr_plaza.jpg';
+    console.warn('Error cámara AR:', err);
+
+    // Si falló por restricciones altas (OverconstrainedError), probar fallback genérico
+    if (err.name === 'OverconstrainedError' || err.name === 'ConstraintNotSatisfiedError') {
+      try {
+        const streamFb = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        arState.stream = streamFb;
+        arState.videoTrack = streamFb.getVideoTracks()[0];
+        if (video) {
+          video.srcObject = streamFb;
+          await video.play().catch(e => console.warn('Fallback play catch:', e));
+          video.classList.remove('ar-video-synthetic');
+        }
+        if (banner) banner.classList.add('hidden');
+        return;
+      } catch (err2) {
+        console.warn('Fallback cámara falló:', err2);
+      }
     }
+
+    let title = '📷 Modo Visión Sintética AR';
+    let desc = 'Sensor de cámara física no disponible.';
+    let canRetry = true;
+
+    if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+      title = '⚠️ Permiso de Cámara Denegado';
+      desc = 'Has rechazado el acceso a la cámara. Para ver las calles en vivo, permite la cámara en los permisos del navegador y toca Reintentar.';
+      canRetry = true;
+    } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+      title = '📷 Cámara No Encontrada';
+      desc = 'No se detectó un sensor de cámara en tu dispositivo. Modo holográfico interactivo 360° activo.';
+      canRetry = false;
+    } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+      title = '⚠️ Cámara Ocupada';
+      desc = 'La cámara está siendo utilizada por otra aplicación. Ciérrala y toca Reintentar.';
+      canRetry = true;
+    }
+
+    activateSyntheticArMode(title, desc, canRetry);
+  }
+}
+
+function activateSyntheticArMode(titleText, descText, showRetry = true) {
+  arState.isSynthetic = true;
+  const video = document.getElementById('ar-video');
+  const banner = document.getElementById('ar-camera-banner');
+  const title = document.getElementById('ar-banner-title');
+  const desc = document.getElementById('ar-banner-desc');
+  const retryBtn = document.getElementById('btn-ar-retry');
+
+  if (video) {
+    if (video.srcObject) {
+      video.srcObject = null;
+    }
+    video.poster = 'icons/vr_plaza.jpg';
+    video.classList.add('ar-video-synthetic');
   }
 
-  startArRenderLoop();
-  showBanner('📷 Visor AR Activo: Apunta tu cámara a los hitos del Cusco.');
+  if (banner) {
+    if (title) title.textContent = titleText;
+    if (desc) desc.textContent = descText;
+    if (retryBtn) retryBtn.style.display = showRetry ? 'inline-block' : 'none';
+    banner.classList.remove('hidden');
+  }
+
+  showBanner(`${titleText}: Modo interactivo 360° simulado.`);
+}
+
+async function retryArCamera() {
+  showBanner('🔄 Solicitando permisos de cámara...');
+  await startArCamera();
 }
 
 function closeArModal() {
@@ -1502,17 +1739,30 @@ function initArCompassTape() {
   const track = document.getElementById('ar-tape-track');
   if (!track || track.children.length > 0) return;
 
-  const points = [
-    { deg: 0, label: 'N' }, { deg: 30, label: '30°' }, { deg: 60, label: '60°' },
-    { deg: 90, label: 'E' }, { deg: 120, label: '120°' }, { deg: 150, label: '150°' },
-    { deg: 180, label: 'S' }, { deg: 210, label: '210°' }, { deg: 240, label: '240°' },
-    { deg: 270, label: 'O' }, { deg: 300, label: '300°' }, { deg: 330, label: '330°' },
-    { deg: 360, label: 'N' }
+  // 12 ticks por ciclo de 360° (cada 30° un tick etiquetado, ancho fijo 60px -> 2.0px/grado)
+  const baseTicks = [
+    { deg: 0, label: 'N', cardinal: true },
+    { deg: 30, label: '30°' },
+    { deg: 60, label: '60°' },
+    { deg: 90, label: 'E', cardinal: true },
+    { deg: 120, label: '120°' },
+    { deg: 150, label: '150°' },
+    { deg: 180, label: 'S', cardinal: true },
+    { deg: 210, label: '210°' },
+    { deg: 240, label: '240°' },
+    { deg: 270, label: 'O', cardinal: true },
+    { deg: 300, label: '300°' },
+    { deg: 330, label: '330°' }
   ];
 
-  track.innerHTML = points.map(p => `
-    <span class="ar-tape-tick ${isNaN(p.label) ? 'cardinal' : ''}">${p.label}</span>
-  `).join('');
+  // Generar 3 ciclos para rotación infinita suave (-360° a +720°)
+  let fullHtml = '';
+  for (let c = 0; c < 3; c++) {
+    baseTicks.forEach(t => {
+      fullHtml += `<span class="ar-tape-item ${t.cardinal ? 'cardinal' : ''}">${t.label}</span>`;
+    });
+  }
+  track.innerHTML = fullHtml;
 }
 
 function startArRenderLoop() {
@@ -1525,10 +1775,24 @@ function startArRenderLoop() {
 
     const heading = state.currentHeading || 0;
 
-    // Desplazar cinta de brújula
+    // Desplazar cinta de brújula calibrada (60px por cada 30° -> 2.0px por grado)
+    // Ciclo 1: 0 a 11 (items 0..11, 720px total)
+    // Ciclo 2: 12 a 23 (items 12..23, tick N en item 12)
+    // El centro del item 12 (0° N) está en: 12 * 60 + 30 = 750px.
+    // Con track a left: 50%, un translateX(-750px) centra exactamente N bajo el puntero.
     if (tapeTrack) {
-      const offsetPx = (heading % 360) * 1.8;
-      tapeTrack.style.transform = `translateX(-${offsetPx}px)`;
+      const headingNorm = (((heading % 360) + 360) % 360);
+      const pxPerDeg = 2.0;
+      const zeroCenterOffset = 750;
+      const shiftPx = zeroCenterOffset + (headingNorm * pxPerDeg);
+      tapeTrack.style.transform = `translateX(-${shiftPx.toFixed(1)}px)`;
+    }
+
+    const indicatorText = document.getElementById('ar-tape-indicator-text');
+    if (indicatorText) {
+      const cardinals = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
+      const card = cardinals[Math.round(heading / 45) % 8];
+      indicatorText.textContent = `${Math.round(heading)}° ${card}`;
     }
 
     if (container) {
