@@ -773,11 +773,19 @@ function toggleTourSimulation() {
   if (state.isSimulatingWalk) {
     clearInterval(state.walkTimer);
     state.isSimulatingWalk = false;
-    btn.textContent = '🚶 Simular Paseo';
+    if (btn) {
+      btn.textContent = '🚶 Iniciar Simulación de Paseo';
+      btn.classList.remove('btn-danger');
+      btn.classList.add('btn-primary');
+    }
     showBanner('Simulación de caminata detenida.');
   } else {
     state.isSimulatingWalk = true;
-    btn.textContent = '⏸️ Pausar Paseo';
+    if (btn) {
+      btn.textContent = '⏸️ Pausar Simulación';
+      btn.classList.remove('btn-primary');
+      btn.classList.add('btn-danger');
+    }
     showBanner('🚶 Simulación activa: Recorriendo Hatun Rumiyoc y Av. El Sol.');
     
     state.walkTimer = setInterval(() => {
@@ -1054,7 +1062,7 @@ async function toggleCompassFollow() {
   const btn = document.getElementById('btn-compass-follow');
   if (btn) {
     btn.classList.toggle('active', state.compassFollowActive);
-    btn.innerHTML = state.compassFollowActive ? '🧭 Brújula 360° ON' : '🧭 Brújula 360°';
+    btn.setAttribute('title', state.compassFollowActive ? 'Brújula 360° Activa (Toca para fijar orientación manual)' : 'Brújula 360°: Girar mapa según orientación del celular');
   }
 
   if (state.compassFollowActive) {
@@ -1077,7 +1085,7 @@ function toggle3dPerspective() {
   const btn = document.getElementById('btn-3d-tilt');
   if (btn) {
     btn.classList.toggle('active', state.is3dActive);
-    btn.innerHTML = state.is3dActive ? '📐 3D Tilt ON' : '📐 3D Tilt';
+    btn.setAttribute('title', state.is3dActive ? 'Perspectiva 3D Activa (Toca para vista cenital 2D)' : 'Alternar perspectiva 3D del mapa');
   }
 
   showBanner(state.is3dActive ? '📐 Perspectiva 3D Vectorial Activada (48°).' : '📐 Vista Cenital 2D Plana Activada (0°).');
@@ -1092,7 +1100,7 @@ function resetMapNorth() {
   const btn = document.getElementById('btn-compass-follow');
   if (btn) {
     btn.classList.remove('active');
-    btn.innerHTML = '🧭 Brújula 360°';
+    btn.setAttribute('title', 'Brújula 360°: Girar mapa según orientación del celular');
   }
   showBanner('🧭 Mapa orientado al Norte (0°).');
 }
@@ -1948,6 +1956,57 @@ function closeAltitudeModal() {
   if (modal) modal.classList.add('modal-hidden');
 }
 
+// 20. Control de Bottom Sheet Plegable / Peek (Estilo Google Maps / Apple Maps)
+function toggleTouristSheet(forceState) {
+  const sheet = document.getElementById('tourist-bottom-sheet');
+  const hint = document.getElementById('sheet-toggle-hint');
+  if (!sheet) return;
+
+  const isCurrentlyExpanded = sheet.classList.contains('is-expanded');
+  const shouldExpand = forceState !== undefined ? forceState : !isCurrentlyExpanded;
+
+  if (shouldExpand) {
+    sheet.classList.remove('is-collapsed');
+    sheet.classList.add('is-expanded');
+    if (hint) hint.textContent = '▼ Plegar';
+  } else {
+    sheet.classList.remove('is-expanded');
+    sheet.classList.add('is-collapsed');
+    if (hint) hint.textContent = '▲ Más detalles';
+  }
+
+  // Refrescar tamaño geométrico del mapa MapLibre tras animación de transición
+  setTimeout(() => {
+    if (touristMap) touristMap.resize();
+  }, 320);
+}
+
+function initSheetSwipeGestures() {
+  const sheet = document.getElementById('tourist-bottom-sheet');
+  if (!sheet) return;
+  let startY = 0;
+
+  sheet.addEventListener('touchstart', (e) => {
+    if (e.touches && e.touches.length > 0) {
+      startY = e.touches[0].clientY;
+    }
+  }, { passive: true });
+
+  sheet.addEventListener('touchend', (e) => {
+    if (e.changedTouches && e.changedTouches.length > 0) {
+      const endY = e.changedTouches[0].clientY;
+      const diff = startY - endY;
+      if (diff > 45) {
+        // Deslizar hacia arriba -> expandir
+        toggleTouristSheet(true);
+      } else if (diff < -45) {
+        // Deslizar hacia abajo -> plegar
+        toggleTouristSheet(false);
+      }
+    }
+  }, { passive: true });
+}
+
 // Conectividad nativa del navegador
 window.addEventListener('online', () => {
   if (!state.isSimulatedOffline) {
@@ -1972,4 +2031,5 @@ window.addEventListener('DOMContentLoaded', () => {
   updateBufferUI();
   updateOperatorTable();
   compassManager.start();
+  initSheetSwipeGestures();
 });

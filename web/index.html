@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-  <link rel="stylesheet" href="style.css?v=20261002-v4">
+  <link rel="stylesheet" href="style.css?v=20261002-v5">
 </head>
 <body>
   <!-- Header Bar -->
@@ -31,9 +31,14 @@
       </div>
     </div>
     <div class="header-badges">
-      <span id="network-badge" class="badge badge-online">
-        <span class="badge-dot"></span> <span id="network-status-text">Online</span>
-      </span>
+      <div class="header-badges-row">
+        <span id="altitude-badge" class="badge badge-altitude" onclick="openAltitudeModal()" title="Altitud Cusco: 3,399 msnm (Toca para ver monitor de salud y soroche)">
+          🏔️ 3,399m
+        </span>
+        <span id="network-badge" class="badge badge-online">
+          <span class="badge-dot"></span> <span id="network-status-text">Online</span>
+        </span>
+      </div>
       <span id="gps-badge" class="badge badge-gps">
         🛰️ <span id="gps-accuracy">Buscando...</span>
       </span>
@@ -79,125 +84,139 @@
 
         <div id="tourist-map" class="map-container"></div>
 
-        <!-- Floating Innovation Action Bar -->
+        <!-- Floating Innovation Action Bar (Compact Circular FABs) -->
         <div class="map-floating-bar">
-          <button class="btn-float btn-ar-glow" onclick="openArModal()" id="btn-ar-view" title="Cámara con Realidad Aumentada (AR) sobre calles del Cusco">
-            📷 Visor AR
+          <button class="fab-circle fab-compass" onclick="toggleCompassFollow()" id="btn-compass-follow" title="Brújula 360°: Girar mapa según orientación del celular">
+            <span class="fab-icon">🧭</span>
           </button>
-          <button class="btn-float btn-compass-rotate" onclick="toggleCompassFollow()" id="btn-compass-follow" title="Girar mapa automáticamente según orientación del celular">
-            🧭 Brújula 360°
+          <button class="fab-circle fab-3d" onclick="toggle3dPerspective()" id="btn-3d-tilt" title="Alternar perspectiva 3D del mapa">
+            <span class="fab-icon">📐</span>
+            <span class="fab-tag">3D</span>
           </button>
-          <button class="btn-float btn-3d-glow" onclick="toggle3dPerspective()" id="btn-3d-tilt" title="Alternar perspectiva 3D del mapa">
-            📐 3D Tilt
+          <button class="fab-circle fab-vr" onclick="openVrModal()" id="btn-vr-open" title="Visor de Realidad Virtual 360° EPG YUYARIY">
+            <span class="fab-icon">🥽</span>
+            <span class="fab-tag">VR</span>
           </button>
-          <button class="btn-float btn-vr-glow" onclick="openVrModal()" title="Visor de Realidad Virtual 360° EPG YUYARIY">
-            🥽 VR 360°
-          </button>
-          <button class="btn-float btn-audio-glow" onclick="toggleAudioGuide()" id="btn-audio" title="Audio-Guía Histórica con Voz">
-            🎙️ Audio
-          </button>
-          <button class="btn-float" onclick="openAltitudeModal()" title="Monitor de Altitud y Soroche Cusco">
-            🏔️ 3,399m
-          </button>
-          <button class="btn-float" onclick="centerOnUser()" title="Centrar mi ubicación GPS">
-            🎯 GPS
-          </button>
-          <button class="btn-float" onclick="toggleTourSimulation()" id="btn-sim-walk" title="Simular recorrido por Cusco">
-            🚶 Paseo
+          <button class="fab-circle fab-gps" onclick="centerOnUser()" id="btn-gps-center" title="Centrar mi ubicación GPS">
+            <span class="fab-icon">🎯</span>
           </button>
         </div>
       </div>
 
-      <!-- Tourist Control Card -->
-      <div class="tourist-card">
-        <!-- Brand Pill -->
-        <div class="tour-brand-pill" onclick="openAgencyInfoModal()" title="Ver ficha técnica y detalles del tour">
-          <img src="icons/yuyariy-logo.png" alt="EPG YUYARIY" class="tour-brand-pill-img">
-          <span class="tour-brand-pill-text">EPG YUYARIY · Tours con VR ℹ️</span>
+      <!-- Tourist Control Card (Peek / Expandable Bottom Sheet) -->
+      <div class="tourist-card is-collapsed" id="tourist-bottom-sheet">
+        <!-- Sheet Handle Bar (Tap or Swipe to Expand / Collapse) -->
+        <div class="sheet-handle-bar" onclick="toggleTouristSheet()" title="Toca o desliza para ver más detalles del tour">
+          <div class="sheet-handle-pill"></div>
+          <div class="sheet-handle-content">
+            <span class="sheet-handle-title">🏛️ City Tour VR · EPG YUYARIY</span>
+            <span class="sheet-toggle-hint" id="sheet-toggle-hint">▲ Más detalles</span>
+          </div>
         </div>
 
-        <!-- Interactive Tour Milestones Carousel -->
-        <div class="tour-milestones-card">
-          <div class="milestones-header">
-            <span>🏛️ Hitos del City Tour VR</span>
-            <div class="lang-switch-group">
-              <button class="lang-btn lang-active" onclick="setTourLanguage('es', this)" title="Español">🇵🇪 ES</button>
-              <button class="lang-btn" onclick="setTourLanguage('en', this)" title="English">🇬🇧 EN</button>
-              <button class="lang-btn" onclick="setTourLanguage('qu', this)" title="Runasimi (Quechua)">🏛️ QU</button>
+        <!-- Peek Section (Always visible) -->
+        <div class="sheet-peek-content">
+          <!-- Interactive Tour Milestones Carousel with AR, Audio and Language Switcher -->
+          <div class="tour-milestones-card">
+            <div class="milestones-header">
+              <span class="milestones-heading">🏛️ Hitos del Tour</span>
+              <div class="milestones-controls">
+                <button class="btn-tool-pill btn-ar-pill" onclick="openArModal()" title="Cámara con Realidad Aumentada (AR)">
+                  📷 AR
+                </button>
+                <button class="btn-tool-pill btn-audio-pill" id="btn-audio" onclick="toggleAudioGuide()" title="Audio-Guía Narrada Oficial">
+                  🎙️ Audio
+                </button>
+                <div class="lang-switch-group">
+                  <button class="lang-btn lang-active" onclick="setTourLanguage('es', this)" title="Español">🇵🇪 ES</button>
+                  <button class="lang-btn" onclick="setTourLanguage('en', this)" title="English">🇬🇧 EN</button>
+                  <button class="lang-btn" onclick="setTourLanguage('qu', this)" title="Runasimi">🏛️ QU</button>
+                </div>
+              </div>
+            </div>
+            <div class="milestones-scroll">
+              <button class="milestone-chip chip-active" onclick="selectLandmark('plazaDeArmas', this)">
+                <span class="chip-title">Plaza de Armas</span>
+                <span class="chip-tag">Huacaypata</span>
+              </button>
+              <button class="milestone-chip" onclick="selectLandmark('qoricancha', this)">
+                <span class="chip-title">Qoricancha</span>
+                <span class="chip-tag">Templo Sol</span>
+              </button>
+              <button class="milestone-chip" onclick="selectLandmark('sacsayhuaman', this)">
+                <span class="chip-title">Sacsayhuamán</span>
+                <span class="chip-tag">Fortaleza</span>
+              </button>
+              <button class="milestone-chip" onclick="selectLandmark('sanPedro', this)">
+                <span class="chip-title">San Pedro</span>
+                <span class="chip-tag">Mercado</span>
+              </button>
             </div>
           </div>
-          <div class="milestones-scroll">
-            <button class="milestone-chip chip-active" onclick="selectLandmark('plazaDeArmas', this)">
-              <span class="chip-title">Plaza de Armas</span>
-              <span class="chip-tag">Huacaypata</span>
-            </button>
-            <button class="milestone-chip" onclick="selectLandmark('qoricancha', this)">
-              <span class="chip-title">Qoricancha</span>
-              <span class="chip-tag">Templo Sol</span>
-            </button>
-            <button class="milestone-chip" onclick="selectLandmark('sacsayhuaman', this)">
-              <span class="chip-title">Sacsayhuamán</span>
-              <span class="chip-tag">Fortaleza</span>
-            </button>
-            <button class="milestone-chip" onclick="selectLandmark('sanPedro', this)">
-              <span class="chip-title">San Pedro</span>
-              <span class="chip-tag">Mercado</span>
+
+          <!-- Compact SOS Panic Button -->
+          <div class="sos-compact-wrapper">
+            <button id="btn-sos" class="btn-sos-compact" ontouchstart="handleSosTrigger(event)" onclick="handleSosTrigger(event)" title="Presiona para activar alerta SOS de auxilio">
+              <span class="sos-icon">🚨</span>
+              <span class="sos-text">SOS AUXILIO INMEDIATO</span>
+              <span class="sos-sub">Emergencia 24/7</span>
             </button>
           </div>
         </div>
 
-        <div class="card-status-row">
-          <div class="status-col">
-            <span class="label">Zona del Tour</span>
-            <span id="geofence-status" class="val val-safe">✅ En Perímetro Seguro</span>
+        <!-- Drawer Content (Revealed on Expand) -->
+        <div class="sheet-drawer-content" id="sheet-drawer-content">
+          <!-- Live Telemetry Status Row -->
+          <div class="card-status-row">
+            <div class="status-col">
+              <span class="label">Zona del Tour</span>
+              <span id="geofence-status" class="val val-safe">✅ En Perímetro</span>
+            </div>
+            <div class="status-col">
+              <span class="label">Movimiento</span>
+              <span id="motion-status" class="val">🟢 En Ruta Nominal</span>
+            </div>
+            <div class="status-col">
+              <span class="label">Búfer Offline</span>
+              <span id="offline-buffer-count" class="val">0 ptos</span>
+            </div>
           </div>
-          <div class="status-col">
-            <span class="label">Movimiento</span>
-            <span id="motion-status" class="val">🟢 En Ruta Nominal</span>
-          </div>
-          <div class="status-col">
-            <span class="label">Búfer Offline</span>
-            <span id="offline-buffer-count" class="val">0 ptos</span>
-          </div>
-        </div>
 
-        <!-- Big SOS Panic Button -->
-        <div class="sos-wrapper">
-          <button id="btn-sos" class="btn-sos-pulse" ontouchstart="handleSosTrigger(event)" onclick="handleSosTrigger(event)">
-            <span class="sos-icon">🚨</span>
-            <span class="sos-text">SOS</span>
-            <span class="sos-sub">Auxilio Inmediato</span>
-          </button>
-        </div>
-
-        <!-- Directorio de Emergencia Turística de Cusco (Acceso Rápido 24/7) -->
-        <div class="emergency-quick-bar">
-          <div class="emergency-bar-title">
-            <span>🚨 Auxilio Turístico Cusco</span>
-            <span class="emergency-24h">24 Horas</span>
+          <!-- Directorio de Emergencia Turística de Cusco (Acceso Rápido 24/7) -->
+          <div class="emergency-quick-bar">
+            <div class="emergency-bar-title">
+              <span>🚨 Líneas de Auxilio Directo Cusco</span>
+              <span class="emergency-24h">24 Horas</span>
+            </div>
+            <div class="emergency-actions-grid">
+              <a href="tel:+5184249654" class="btn-emergency-action btn-poltur" title="Llamar a Policía de Turismo POLTUR Cusco">
+                <span class="action-icon">👮</span>
+                <div class="action-info">
+                  <strong>POLTUR</strong>
+                  <small>(084) 249654</small>
+                </div>
+              </a>
+              <a href="tel:106" class="btn-emergency-action btn-samu" title="Llamar a Ambulancias Médicas SAMU Cusco">
+                <span class="action-icon">🚑</span>
+                <div class="action-info">
+                  <strong>SAMU 106</strong>
+                  <small>Ambulancia</small>
+                </div>
+              </a>
+              <button type="button" class="btn-emergency-action btn-wa-share" onclick="shareLocationWhatsApp()" title="Enviar ubicación GPS exacta por WhatsApp">
+                <span class="action-icon">💬</span>
+                <div class="action-info">
+                  <strong>WhatsApp</strong>
+                  <small>Enviar GPS</small>
+                </div>
+              </button>
+            </div>
           </div>
-          <div class="emergency-actions-grid">
-            <a href="tel:+5184249654" class="btn-emergency-action btn-poltur" title="Llamar a Policía de Turismo POLTUR Cusco">
-              <span class="action-icon">👮</span>
-              <div class="action-info">
-                <strong>POLTUR</strong>
-                <small>(084) 249654</small>
-              </div>
-            </a>
-            <a href="tel:106" class="btn-emergency-action btn-samu" title="Llamar a Ambulancias Médicas SAMU Cusco">
-              <span class="action-icon">🚑</span>
-              <div class="action-info">
-                <strong>SAMU 106</strong>
-                <small>Ambulancia</small>
-              </div>
-            </a>
-            <button type="button" class="btn-emergency-action btn-wa-share" onclick="shareLocationWhatsApp()" title="Enviar ubicación GPS exacta por WhatsApp">
-              <span class="action-icon">💬</span>
-              <div class="action-info">
-                <strong>WhatsApp</strong>
-                <small>Enviar GPS</small>
-              </div>
-            </button>
+
+          <!-- Brand Pill Info Link -->
+          <div class="tour-brand-pill" onclick="openAgencyInfoModal()" title="Ver ficha técnica y detalles de EPG YUYARIY">
+            <img src="icons/icon-192.png" alt="EPG YUYARIY" class="tour-brand-pill-img">
+            <span class="tour-brand-pill-text">EPG YUYARIY S.A.C. · Tours con Realidad Virtual ℹ️</span>
           </div>
         </div>
       </div>
@@ -313,6 +332,15 @@
               <p>Teletransporta la posición fuera del polígono seguro del tour.</p>
             </div>
             <button class="btn-test btn-warning" onclick="triggerOutOfBoundsTest()">Teletransportar Fuera de Zona</button>
+          </div>
+
+          <!-- CP-06 -->
+          <div class="test-item">
+            <div class="test-info">
+              <strong>CP-06: Simulación de Recorrido Turístico (Paseo)</strong>
+              <p>Simula el avance paso a paso del turista por Hatun Rumiyoc y Av. El Sol.</p>
+            </div>
+            <button id="btn-sim-walk" class="btn-test btn-primary" onclick="toggleTourSimulation()">🚶 Iniciar Simulación de Paseo</button>
           </div>
         </div>
 
@@ -540,6 +568,6 @@
   <!-- MapLibre GL Vector Engine & Leaflet JS -->
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="app.js?v=20261002-v4"></script>
+  <script src="app.js?v=20261002-v5"></script>
 </body>
 </html>
