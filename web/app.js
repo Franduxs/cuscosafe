@@ -1129,6 +1129,11 @@ function updateSpatialHud() {
   if (nameEl) nameEl.textContent = nearest.name.split(' (')[0];
   if (distEl) distEl.textContent = `· ${distMeters}m (${timeMin}m)`;
 
+  const sheetLmEl = document.getElementById('sheet-current-lm');
+  const sheetDistEl = document.getElementById('sheet-current-dist');
+  if (sheetLmEl) sheetLmEl.textContent = nearest.name.split(' (')[0];
+  if (sheetDistEl) sheetDistEl.textContent = `· ${distMeters}m`;
+
   const bearing = calculateBearing(current.lat, current.lng, nearest.coords[0], nearest.coords[1]);
   const compassArrow = document.getElementById('compass-icon');
   const compassText = document.getElementById('compass-text');
@@ -1972,13 +1977,32 @@ function toggleTouristSheet(forceState) {
   } else {
     sheet.classList.remove('is-expanded');
     sheet.classList.add('is-collapsed');
-    if (hint) hint.textContent = '▲ Más detalles';
+    if (hint) hint.textContent = '▲ Tour';
   }
 
   // Refrescar tamaño geométrico del mapa MapLibre tras animación de transición
   setTimeout(() => {
     if (touristMap) touristMap.resize();
-  }, 320);
+  }, 360);
+}
+
+function handleMiniSos(e) {
+  if (e) {
+    e.stopPropagation();
+    if (e.preventDefault) e.preventDefault();
+  }
+  handleSosTrigger(e);
+}
+
+function dismissApkBanner() {
+  const bar = document.getElementById('apk-download-bar');
+  if (bar) bar.style.display = 'none';
+  try {
+    localStorage.setItem('cuscosafe_apk_dismissed', '1');
+  } catch (err) {}
+  setTimeout(() => {
+    if (touristMap) touristMap.resize();
+  }, 100);
 }
 
 function initSheetSwipeGestures() {
@@ -2024,6 +2048,10 @@ window.addEventListener('offline', () => {
 
 // Inicialización general al cargar
 window.addEventListener('DOMContentLoaded', () => {
+  if (localStorage.getItem('cuscosafe_apk_dismissed') === '1') {
+    const bar = document.getElementById('apk-download-bar');
+    if (bar) bar.style.display = 'none';
+  }
   initMaps();
   initVrViewer();
   startGpsTracking();

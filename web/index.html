@@ -18,7 +18,7 @@
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-  <link rel="stylesheet" href="style.css?v=20261002-v5">
+  <link rel="stylesheet" href="style.css?v=20261002-v8">
 </head>
 <body>
   <!-- Header Bar -->
@@ -46,12 +46,15 @@
   </header>
 
   <!-- Android APK Direct Download Banner -->
-  <div class="apk-download-bar">
+  <div class="apk-download-bar" id="apk-download-bar">
     <div class="apk-text">
       <span class="apk-badge">APK</span>
       <span>¿Usas Android? Descarga el instalador:</span>
     </div>
-    <a href="https://franduxs-bot.xyz/cuscosafe/CuscoSafe.apk" class="btn-apk-dl" download="CuscoSafe.apk">📥 Descargar .APK</a>
+    <div class="apk-actions">
+      <a href="https://franduxs-bot.xyz/cuscosafe/CuscoSafe.apk" class="btn-apk-dl" download="CuscoSafe.apk">📥 Descargar .APK</a>
+      <button class="btn-apk-close" onclick="dismissApkBanner()" title="Cerrar aviso">✕</button>
+    </div>
   </div>
 
   <!-- Notification Banner (Geofence / Anomaly) -->
@@ -103,19 +106,30 @@
         </div>
       </div>
 
-      <!-- Tourist Control Card (Peek / Expandable Bottom Sheet) -->
+      <!-- Tourist Control Card (Modern Floating Bottom Sheet with 56px Peek) -->
       <div class="tourist-card is-collapsed" id="tourist-bottom-sheet">
-        <!-- Sheet Handle Bar (Tap or Swipe to Expand / Collapse) -->
-        <div class="sheet-handle-bar" onclick="toggleTouristSheet()" title="Toca o desliza para ver más detalles del tour">
+        <!-- Sheet Handle Bar (56px Permanent Floating Handle) -->
+        <div class="sheet-handle-bar" onclick="toggleTouristSheet()" title="Toca o desliza para abrir o cerrar opciones del tour">
           <div class="sheet-handle-pill"></div>
           <div class="sheet-handle-content">
-            <span class="sheet-handle-title">🏛️ City Tour VR · EPG YUYARIY</span>
-            <span class="sheet-toggle-hint" id="sheet-toggle-hint">▲ Más detalles</span>
+            <div class="sheet-handle-left">
+              <span class="sheet-handle-icon">🏛️</span>
+              <div class="sheet-handle-info">
+                <span class="sheet-handle-title" id="sheet-current-lm">Plaza de Armas</span>
+                <span class="sheet-handle-sub" id="sheet-current-dist">· 240m</span>
+              </div>
+            </div>
+            <div class="sheet-handle-right">
+              <button class="sheet-mini-sos" onclick="handleMiniSos(event)" title="Alerta SOS Inmediata">
+                🚨 SOS
+              </button>
+              <span class="sheet-toggle-hint" id="sheet-toggle-hint">▲ Tour</span>
+            </div>
           </div>
         </div>
 
-        <!-- Peek Section (Always visible) -->
-        <div class="sheet-peek-content">
+        <!-- Scrollable Sheet Body (Revealed on Expand) -->
+        <div class="sheet-body" id="sheet-body">
           <!-- Interactive Tour Milestones Carousel with AR, Audio and Language Switcher -->
           <div class="tour-milestones-card">
             <div class="milestones-header">
@@ -162,10 +176,7 @@
               <span class="sos-sub">Emergencia 24/7</span>
             </button>
           </div>
-        </div>
 
-        <!-- Drawer Content (Revealed on Expand) -->
-        <div class="sheet-drawer-content" id="sheet-drawer-content">
           <!-- Live Telemetry Status Row -->
           <div class="card-status-row">
             <div class="status-col">
@@ -568,6 +579,6 @@
   <!-- MapLibre GL Vector Engine & Leaflet JS -->
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="app.js?v=20261002-v5"></script>
+  <script src="app.js?v=20261002-v8"></script>
 </body>
 </html>

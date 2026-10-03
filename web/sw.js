@@ -1,11 +1,11 @@
-const CACHE_NAME = 'cuscosafe-v7';
+const CACHE_NAME = 'cuscosafe-v8';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './style.css',
   './app.js',
-  './style.css?v=20261002-v5',
-  './app.js?v=20261002-v5',
+  './style.css?v=20261002-v8',
+  './app.js?v=20261002-v8',
   './manifest.json',
   './icons/icon-192.png',
   './icons/icon-512.png',

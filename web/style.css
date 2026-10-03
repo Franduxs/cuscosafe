@@ -188,11 +188,34 @@ body {
 }
 
 .btn-apk-dl:active {
-  transform: scale(0.96);
+  transform: scale(0.95);
 }
 
-.btn-apk-dl:active {
-  transform: scale(0.95);
+.apk-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-apk-close {
+  background: rgba(255, 255, 255, 0.14);
+  border: none;
+  color: #CBD5E0;
+  font-size: 13px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.btn-apk-close:hover,
+.btn-apk-close:active {
+  background: rgba(230, 57, 70, 0.6);
+  color: #FFFFFF;
 }
 
 .badge-dot {
@@ -239,7 +262,7 @@ body {
 .app-main {
   flex: 1;
   position: relative;
-  overflow-y: auto;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -248,10 +271,43 @@ body {
   display: none;
   flex-direction: column;
   height: 100%;
+  overflow-y: auto;
 }
 
 .view-active {
   display: flex;
+}
+
+/* Tourist View (Full-Screen 100% 3D Vector Map Experience) */
+#view-tourist {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+#view-tourist.view-active {
+  display: block;
+}
+
+#view-tourist .map-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+  z-index: 1;
+}
+
+#view-tourist #tourist-map {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 /* Maps */
@@ -333,28 +389,49 @@ body {
   box-shadow: 0 0 12px rgba(210, 165, 66, 0.7);
 }
 
-/* Tourist Bottom Sheet (Peek / Expand System) */
+/* Tourist Bottom Sheet (Modern Floating Bottom Sheet with 56px Peek) */
 .tourist-card {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 600;
   background: var(--color-surface);
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
-  padding: 8px 14px 14px;
-  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 -6px 25px rgba(0, 0, 0, 0.22);
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  z-index: 600;
-  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform;
+  max-height: calc(100% - 72px);
+  pointer-events: auto;
 }
 
+.tourist-card.is-collapsed {
+  transform: translateY(calc(100% - 56px));
+}
+
+.tourist-card.is-expanded {
+  transform: translateY(0);
+}
+
+/* Sheet Handle Bar (56px Permanent Floating Handle) */
 .sheet-handle-bar {
+  flex-shrink: 0;
+  height: 56px;
+  padding: 5px 14px 7px;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  padding: 2px 0 6px;
+  align-items: center;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  background: var(--color-surface);
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
 }
 
 .sheet-handle-pill {
@@ -376,55 +453,97 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 11px;
+}
+
+.sheet-handle-left {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.sheet-handle-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.sheet-handle-info {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  min-width: 0;
 }
 
 .sheet-handle-title {
   font-weight: 800;
+  font-size: 12.5px;
   color: var(--color-slate);
   letter-spacing: -0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+.sheet-handle-sub {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-burgundy);
+  white-space: nowrap;
+}
+
+.sheet-handle-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.sheet-mini-sos {
+  background: linear-gradient(135deg, #E63946, #BA1A27);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  font-size: 11px;
+  font-weight: 900;
+  padding: 4px 10px;
+  border-radius: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 2px 8px rgba(230, 57, 70, 0.4);
+  animation: pulse-mini-sos 2s infinite;
+  transition: transform 0.15s ease;
+}
+
+.sheet-mini-sos:active {
+  transform: scale(0.94);
+}
+
+@keyframes pulse-mini-sos {
+  0% { box-shadow: 0 0 0 0 rgba(230, 57, 70, 0.7); }
+  70% { box-shadow: 0 0 0 5px rgba(230, 57, 70, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(230, 57, 70, 0); }
 }
 
 .sheet-toggle-hint {
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 700;
-  color: var(--color-burgundy);
-  background: rgba(182, 91, 82, 0.1);
-  padding: 2px 8px;
+  color: var(--color-gold);
+  background: rgba(40, 50, 61, 0.08);
+  padding: 3px 8px;
   border-radius: 10px;
   transition: background 0.2s, color 0.2s;
 }
 
-/* Peek section */
-.sheet-peek-content {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* Drawer collapsible content */
-.sheet-drawer-content {
+/* Sheet Scrollable Body */
+.sheet-body {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 10px 14px 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  overflow: hidden;
-  transition: max-height 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.25s ease, margin 0.3s ease;
-}
-
-.tourist-card.is-collapsed .sheet-drawer-content {
-  max-height: 0;
-  opacity: 0;
-  margin: 0;
-  padding: 0;
-  pointer-events: none;
-}
-
-.tourist-card.is-expanded .sheet-drawer-content {
-  max-height: 480px;
-  opacity: 1;
-  pointer-events: auto;
-  margin-top: 4px;
-  padding-bottom: 4px;
 }
 
 .card-status-row {
